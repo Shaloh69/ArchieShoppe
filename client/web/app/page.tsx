@@ -12,11 +12,12 @@ export default function Home() {
     <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
       <div className="inline-block max-w-xl text-center justify-center">
         <span className={title()}>Make&nbsp;</span>
-        <span className={title({ color: "yellow" })}>beautiful&nbsp;</span>
+        <span className={title({ color: "pink" })}>beautiful&nbsp;</span> 
         <br />
         <span className={title()}>
           my course work.
         </span>
+        <p> Rhodel was here </p>
       </div>
 
       <div className="flex gap-3">
