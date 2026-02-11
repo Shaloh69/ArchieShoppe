@@ -54,7 +54,7 @@ export default function Home() {
       </div>
 
       <div className="inline-block max-w-xl text-center justify-center">
-        <span className={title()}>EARL LAWRENCE R. LACUBTAN&nbsp;</span>
+        <span className={title()}>Shem LAWRENCE R. LACUBTAN&nbsp;</span>
         <span className={title({ color: "cyan" })}>Bachelor of Science in Computer Engineering&nbsp;</span>
         <br />
         <span className={title()}>
