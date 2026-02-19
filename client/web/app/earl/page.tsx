@@ -1,12 +1,5 @@
-import { title } from "@/components/primitives";
+import { redirect } from "next/navigation";
 
-interface SearchBarProps { onSearch: (query: string) => void; }
-
-
-export default function DocsPage() {
-  return (
-    <div>
-      <h1 className={title()}>Hello! Earl</h1>
-    </div>
-  );
+export default function EarlPage() {
+  redirect("/");
 }

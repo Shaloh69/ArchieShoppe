@@ -1,9 +1,5 @@
-import { title } from "@/components/primitives";
+import { redirect } from "next/navigation";
 
 export default function BlogPage() {
-  return (
-    <div>
-      <h1 className={title()}>Blog</h1>
-    </div>
-  );
+  redirect("/");
 }

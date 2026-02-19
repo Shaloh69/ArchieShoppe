@@ -7,6 +7,82 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --font-sans: "font", sans-serif;
-    --font-mono: "monospace", monospace;
+  --font-sans: "font", sans-serif;
+  --font-mono: "monospace", monospace;
+
+  --color-brand-primary-950: #071a3a;
+  --color-brand-primary-900: #0a2450;
+  --color-brand-primary-800: #0d2f66;
+  --color-brand-primary-700: #11407f;
+  --color-brand-primary-600: #1553a0;
+  --color-brand-primary-500: #1e6ad6;
+  --color-brand-primary-400: #4a8af0;
+  --color-brand-primary-300: #86b2ff;
+  --color-brand-primary-200: #bfd7ff;
+  --color-brand-primary-100: #e7f0ff;
+  --color-brand-primary-50: #f3f8ff;
+
+  --color-brand-cyan-600: #0891b2;
+  --color-brand-cyan-400: #22d3ee;
+
+  --color-brand-indigo-600: #4f46e5;
+  --color-brand-indigo-400: #818cf8;
+
+  --color-surface-bg-0: #0b1220;
+  --color-surface-bg-1: #0f1a2e;
+  --color-surface-bg-2: #13213a;
+  --color-surface-bg-3: #172848;
+
+  --color-text-1: #eaf1ff;
+  --color-text-2: #b9c7e6;
+  --color-text-3: #7f93bc;
+  --color-text-inverse: #0b1220;
+
+  --color-border-subtle: #1f3157;
+  --color-border-strong: #2a4478;
+
+  --color-status-success-600: #16a34a;
+  --color-status-success-100: #dcfce7;
+  --color-status-warning-600: #d97706;
+  --color-status-warning-100: #ffedd5;
+  --color-status-danger-600: #dc2626;
+  --color-status-danger-100: #fee2e2;
+  --color-status-info-600: #0891b2;
+  --color-status-info-100: #cffafe;
+  --color-status-escrow-600: #4f46e5;
+  --color-status-escrow-100: #e0e7ff;
+
+  --color-viz-1: #1e6ad6;
+  --color-viz-2: #22d3ee;
+  --color-viz-3: #4f46e5;
+  --color-viz-4: #16a34a;
+  --color-viz-5: #d97706;
+  --color-viz-6: #dc2626;
+}
+
+* {
+  border-color: theme(--color-border-subtle);
+}
+
+html,
+body {
+  background: theme(--color-surface-bg-0);
+  color: theme(--color-text-1);
+}
+
+a {
+  color: theme(--color-brand-primary-400);
+  transition: color 180ms ease;
+}
+
+a:hover {
+  color: theme(--color-brand-primary-300);
+}
+
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-bg-0;
+}
+
+.kiosk-glow {
+  box-shadow: 0 0 0 3px rgb(34 211 238 / 0.2);
 }

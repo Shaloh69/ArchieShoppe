@@ -1,69 +1,70 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Next.js + HeroUI",
-  description: "Make beautiful websites regardless of your design experience.",
+  name: "UniThrift",
+  description:
+    "Smart locker thrift marketplace for buyers, sellers, kiosk operations, and admins.",
   navItems: [
     {
-      label: "Home",
-      href: "/",
+      label: "Browse",
+      href: "/app/browse",
     },
     {
-      label: "Earl",
-      href: "/earl",
+      label: "Wallet",
+      href: "/app/wallet",
     },
     {
-      label: "Rhodel",
-      href: "/rhodel",
+      label: "History",
+      href: "/app/history",
     },
     {
-      label: "Blog",
-      href: "/blog",
+      label: "Sell",
+      href: "/app/sell",
     },
     {
-      label: "About",
-      href: "/about",
+      label: "My Listings",
+      href: "/app/seller/listings",
     },
   ],
   navMenuItems: [
     {
-      label: "Profile",
-      href: "/profile",
+      label: "Overview",
+      href: "/admin/overview",
     },
     {
-      label: "Dashboard",
-      href: "/dashboard",
+      label: "Transactions",
+      href: "/admin/transactions",
     },
     {
-      label: "Projects",
-      href: "/projects",
+      label: "Refunds",
+      href: "/admin/refunds",
     },
     {
-      label: "Team",
-      href: "/team",
+      label: "Lockers",
+      href: "/admin/lockers",
     },
     {
-      label: "Calendar",
-      href: "/calendar",
+      label: "Listings",
+      href: "/admin/listings",
     },
     {
-      label: "Settings",
-      href: "/settings",
+      label: "Users",
+      href: "/admin/users",
     },
     {
-      label: "Help & Feedback",
-      href: "/help-feedback",
+      label: "Reports",
+      href: "/admin/reports",
     },
     {
-      label: "Logout",
-      href: "/logout",
+      label: "Audit",
+      href: "/admin/audit",
     },
   ],
   links: {
-    github: "https://github.com/heroui-inc/heroui",
-    twitter: "https://twitter.com/hero_ui",
-    docs: "https://heroui.com",
+    github: "https://github.com/",
+    twitter: "https://twitter.com/",
+    docs: "https://www.heroui.com/docs",
     discord: "https://discord.gg/9b6yyZKmH4",
-    sponsor: "https://patreon.com/jrgarciadev",
+    sponsor: "https://www.heroui.com/",
   },
 };
