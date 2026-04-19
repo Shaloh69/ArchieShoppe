@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Chip } from "@heroui/chip";
 
@@ -38,3 +38,4 @@ export function StatusChip({ kind, value }: StatusChipProps) {
     </Chip>
   );
 }
+

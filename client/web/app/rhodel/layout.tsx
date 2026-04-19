@@ -1,4 +1,4 @@
-export default function PricingLayout({
+﻿export default function PricingLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -11,3 +11,4 @@ export default function PricingLayout({
     </section>
   );
 }
+

@@ -1,6 +1,7 @@
 import {
   AuditLog,
   Item,
+  LockerSubscriptionPlan,
   Locker,
   Order,
   RefundRecord,
@@ -11,6 +12,43 @@ export const walletBalance = 940;
 
 export const categories = ["Clothing", "Accessories", "Shoes", "Tech"];
 export const conditions = ["Like New", "Good", "Fair"] as const;
+export const lockerSubscriptionPlans: LockerSubscriptionPlan[] = [
+  {
+    id: "WEEKLY_1",
+    name: "1 Week",
+    durationDays: 7,
+    price: 149,
+    highlight: "Starter",
+  },
+  {
+    id: "WEEKLY_2",
+    name: "2 Weeks",
+    durationDays: 14,
+    price: 279,
+    highlight: "Better value",
+  },
+  {
+    id: "MONTHLY_1",
+    name: "1 Month",
+    durationDays: 30,
+    price: 549,
+    highlight: "Most picked",
+  },
+  {
+    id: "MONTHLY_2",
+    name: "2 Months",
+    durationDays: 60,
+    price: 999,
+    highlight: "Growth",
+  },
+  {
+    id: "MONTHLY_3",
+    name: "3 Months",
+    durationDays: 90,
+    price: 1399,
+    highlight: "Best long-term",
+  },
+];
 
 export const items: Item[] = [
   {
@@ -74,6 +112,8 @@ export const myListings: Item[] = [
     status: "ACTIVE",
     description: "Cream linen polo, size L.",
     slotId: "S-05",
+    lockerSubscriptionPlanId: "MONTHLY_1",
+    lockerSubscriptionEndsAt: "2026-03-19T10:00:00Z",
     updatedAt: "2026-02-18T10:00:00Z",
   },
   {
@@ -97,6 +137,8 @@ export const myListings: Item[] = [
     status: "SOLD",
     description: "Daily pair, cleaned.",
     slotId: "S-09",
+    lockerSubscriptionPlanId: "WEEKLY_2",
+    lockerSubscriptionEndsAt: "2026-02-22T15:22:00Z",
     updatedAt: "2026-02-16T15:22:00Z",
   },
 ];

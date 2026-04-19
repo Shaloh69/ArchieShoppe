@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import NextLink from "next/link";
@@ -55,17 +55,17 @@ export default function KioskBuyBrowsePage() {
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {visible.map((item) => (
           <Card key={item.id} className="border border-border-subtle bg-surface-bg-2">
             <CardBody className="gap-3 p-5">
               <div className="aspect-[16/10] rounded-lg bg-gradient-to-br from-brand-primary-900 to-brand-primary-700" />
               <p className="text-xl font-semibold text-text-1">{item.title}</p>
               <p className="text-sm text-text-2">{item.condition}</p>
-              <p className="text-2xl font-semibold text-brand-primary-300">{peso(item.price)}</p>
+              <p className="text-2xl font-semibold text-brand-primary-800">{peso(item.price)}</p>
               <Button
                 as={NextLink}
-                className="h-14 text-lg bg-brand-primary-500 text-white hover:bg-brand-primary-400"
+                className="h-14 text-lg btn-cta"
                 href={`/kiosk/buy/item/${item.id}`}
               >
                 View
@@ -77,3 +77,4 @@ export default function KioskBuyBrowsePage() {
     </div>
   );
 }
+

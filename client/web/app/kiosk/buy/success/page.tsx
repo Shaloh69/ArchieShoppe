@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -31,13 +31,13 @@ function KioskBuySuccessContent() {
       <Card className="w-full border border-status-success-600/40 bg-surface-bg-2">
         <CardBody className="items-center gap-4 p-10 text-center">
           <div className="kiosk-glow rounded-full border border-status-success-600/40 bg-status-success-100 p-5 text-4xl text-status-success-600">
-            ✓
+            âœ“
           </div>
           <h1 className="text-4xl font-semibold text-text-1">Purchase Successful</h1>
           <p className="text-lg text-text-2">Please claim your item from Slot #{slot}</p>
           <p className="text-sm text-text-3">Returning to welcome screen in {secondsLeft}s...</p>
           <Button
-            className="h-14 min-w-48 text-lg bg-brand-primary-500 text-white hover:bg-brand-primary-400"
+            className="h-14 min-w-48 text-lg btn-cta"
             onPress={() => router.replace("/kiosk/welcome")}
           >
             Return now
@@ -55,3 +55,4 @@ export default function KioskBuySuccessPage() {
     </Suspense>
   );
 }
+

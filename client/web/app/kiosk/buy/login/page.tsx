@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -65,7 +65,7 @@ export default function KioskBuyLoginPage() {
               Cancel
             </Button>
             <Button
-              className="h-14 text-lg bg-brand-primary-500 text-white hover:bg-brand-primary-400"
+              className="h-14 text-lg btn-cta"
               isLoading={loading}
               onPress={onLogin}
             >
@@ -77,3 +77,4 @@ export default function KioskBuyLoginPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Button } from "@heroui/button";
@@ -8,6 +8,7 @@ import { Select, SelectItem } from "@heroui/select";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 
 import { StatusChip } from "@/components/unithrift/status-chip";
+import { ResponsiveTable } from "@/components/unithrift/responsive-table";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { peso } from "@/lib/unithrift-format";
 import { items, myListings } from "@/lib/unithrift-mocks";
@@ -65,50 +66,52 @@ export default function AdminListingsPage() {
         </Select>
       </div>
 
-      <Table
-        aria-label="Admin listings moderation table"
-        classNames={{
-          base: "border border-border-subtle rounded-xl bg-surface-bg-2",
-          th: "bg-surface-bg-3 text-text-2",
-          tr: "border-b border-border-subtle hover:bg-[#11203A]",
-          td: "text-text-2",
-        }}
-      >
-        <TableHeader>
-          <TableColumn>ITEM ID</TableColumn>
-          <TableColumn>TITLE</TableColumn>
-          <TableColumn>SELLER</TableColumn>
-          <TableColumn>PRICE</TableColumn>
-          <TableColumn>SLOT</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn>FLAGS</TableColumn>
-          <TableColumn>ACTION</TableColumn>
-        </TableHeader>
-        <TableBody items={filtered} emptyContent="No listings match filters.">
-          {(item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.id}</TableCell>
-              <TableCell>{item.title}</TableCell>
-              <TableCell>{item.sellerName}</TableCell>
-              <TableCell>{peso(item.price)}</TableCell>
-              <TableCell>{item.slotId ?? "N/A"}</TableCell>
-              <TableCell>
-                <StatusChip kind="item" value={item.status} />
-              </TableCell>
-              <TableCell>{item.flagged ? "FLAGGED" : "OK"}</TableCell>
-              <TableCell>
-                <Button
-                  className="bg-brand-primary-700 text-text-1 hover:bg-brand-primary-600"
-                  size="sm"
-                  onPress={() => setSelectedId(item.id)}
-                >
-                  View
-                </Button>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <ResponsiveTable>
+        <Table
+          aria-label="Admin listings moderation table"
+          classNames={{
+            base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[940px]",
+            th: "bg-surface-bg-3 text-text-2",
+            tr: "border-b border-border-subtle hover:bg-[#11203A]",
+            td: "text-text-2",
+          }}
+        >
+          <TableHeader>
+            <TableColumn>ITEM ID</TableColumn>
+            <TableColumn>TITLE</TableColumn>
+            <TableColumn>SELLER</TableColumn>
+            <TableColumn>PRICE</TableColumn>
+            <TableColumn>SLOT</TableColumn>
+            <TableColumn>STATUS</TableColumn>
+            <TableColumn>FLAGS</TableColumn>
+            <TableColumn>ACTION</TableColumn>
+          </TableHeader>
+          <TableBody items={filtered} emptyContent="No listings match filters.">
+            {(item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.id}</TableCell>
+                <TableCell>{item.title}</TableCell>
+                <TableCell>{item.sellerName}</TableCell>
+                <TableCell>{peso(item.price)}</TableCell>
+                <TableCell>{item.slotId ?? "N/A"}</TableCell>
+                <TableCell>
+                  <StatusChip kind="item" value={item.status} />
+                </TableCell>
+                <TableCell>{item.flagged ? "FLAGGED" : "OK"}</TableCell>
+                <TableCell>
+                  <Button
+                    className="btn-brand"
+                    size="sm"
+                    onPress={() => setSelectedId(item.id)}
+                  >
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </ResponsiveTable>
 
       <Drawer
         isOpen={Boolean(selected)}
@@ -152,7 +155,7 @@ export default function AdminListingsPage() {
                     Remove
                   </Button>
                   <Button
-                    className="bg-brand-indigo-600 text-white hover:brightness-110"
+                    className="btn-brand"
                     onPress={() =>
                       notifyInfo({
                         title: "Edit request sent",
@@ -171,3 +174,4 @@ export default function AdminListingsPage() {
     </div>
   );
 }
+

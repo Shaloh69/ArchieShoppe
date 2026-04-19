@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { ThemeProviderProps } from "next-themes";
 
@@ -37,7 +37,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
               title: "text-text-1",
               description: "text-text-2",
               closeButton:
-                "bg-brand-primary-700 hover:bg-brand-primary-600 text-text-1",
+                "btn-brand text-white",
               progressTrack: "bg-surface-bg-1",
               progressIndicator: "bg-brand-cyan-400",
             },
@@ -60,3 +60,4 @@ export function Providers({ children, themeProps }: ProvidersProps) {
     </HeroUIProvider>
   );
 }
+

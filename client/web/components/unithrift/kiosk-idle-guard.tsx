@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 
@@ -16,3 +16,4 @@ export function KioskIdleGuard({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+

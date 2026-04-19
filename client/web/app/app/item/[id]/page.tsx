@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -88,7 +88,7 @@ export default function ItemDetailPage() {
             </div>
             <StatusChip kind="item" value={item.status} />
           </div>
-          <p className="text-3xl font-semibold text-brand-primary-300">{peso(item.price)}</p>
+          <p className="text-3xl font-semibold text-brand-primary-800">{peso(item.price)}</p>
           <p className="text-sm text-text-2">{item.description}</p>
           <div className="rounded-lg border border-border-subtle bg-surface-bg-3 p-3 text-sm text-text-2">
             <p>Condition: {item.condition}</p>
@@ -97,7 +97,7 @@ export default function ItemDetailPage() {
             <p>Wallet balance: {peso(walletBalance)}</p>
           </div>
           <Button
-            className="focus-ring bg-brand-primary-600 text-white hover:bg-brand-primary-500 disabled:bg-border-strong disabled:text-text-3"
+            className="focus-ring btn-cta disabled:bg-border-strong disabled:text-text-3"
             isDisabled={!canAfford}
             onPress={() => setIsConfirmOpen(true)}
           >
@@ -126,7 +126,7 @@ export default function ItemDetailPage() {
               Cancel
             </Button>
             <Button
-              className="bg-brand-primary-600 text-white hover:bg-brand-primary-500"
+              className="btn-cta"
               isLoading={isSubmitting}
               onPress={confirmPurchase}
             >
@@ -138,3 +138,4 @@ export default function ItemDetailPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import NextLink from "next/link";
@@ -116,7 +116,7 @@ export default function BrowsePage() {
           onAction={clearFilters}
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {filteredItems.map((item, index) => (
             <motion.div
               key={item.id}
@@ -136,13 +136,13 @@ export default function BrowsePage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-text-2">{item.condition}</span>
-                    <span className="text-xl font-semibold text-brand-primary-300">{peso(item.price)}</span>
+                    <span className="text-xl font-semibold text-brand-primary-800">{peso(item.price)}</span>
                   </div>
                 </CardBody>
                 <CardFooter className="p-5 pt-0">
                   <Button
                     as={NextLink}
-                    className="focus-ring w-full bg-brand-primary-600 text-white hover:bg-brand-primary-500"
+                    className="focus-ring w-full btn-cta"
                     href={`/app/item/${item.id}`}
                   >
                     View
@@ -156,3 +156,4 @@ export default function BrowsePage() {
     </div>
   );
 }
+

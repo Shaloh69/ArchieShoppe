@@ -1,4 +1,4 @@
-import NextLink from "next/link";
+﻿import NextLink from "next/link";
 import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
 
@@ -25,7 +25,7 @@ const entryPoints = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-brand-primary-950 via-surface-bg-0 to-surface-bg-1 px-6 py-16">
+    <main className="min-h-screen bg-gradient-to-b from-brand-primary-100 via-surface-bg-0 to-surface-bg-1 px-6 py-16">
       <section className="mx-auto max-w-6xl">
         <div className="mb-10">
           <p className="mb-3 inline-flex rounded-full border border-border-strong bg-brand-primary-950 px-3 py-1 text-xs uppercase tracking-[0.2em] text-brand-primary-300">
@@ -55,7 +55,7 @@ export default function Home() {
                 </div>
                 <Button
                   as={NextLink}
-                  className="focus-ring bg-brand-primary-600 font-medium text-text-1 hover:bg-brand-primary-500 active:bg-brand-primary-700"
+                  className="focus-ring btn-cta font-medium"
                   href={entry.href}
                 >
                   {entry.cta}
@@ -68,3 +68,4 @@ export default function Home() {
     </main>
   );
 }
+

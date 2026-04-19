@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Button } from "@heroui/button";
@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from 
 import { Drawer, DrawerBody, DrawerContent, DrawerHeader } from "@heroui/drawer";
 
 import { StatusChip } from "@/components/unithrift/status-chip";
+import { ResponsiveTable } from "@/components/unithrift/responsive-table";
 import { EmptyBlock } from "@/components/unithrift/state-block";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { peso, shortDateTime } from "@/lib/unithrift-format";
@@ -94,46 +95,48 @@ export default function HistoryPage() {
           title="No history found"
         />
       ) : (
-        <Table
-          aria-label="Order history table"
-          classNames={{
-            base: "border border-border-subtle rounded-xl bg-surface-bg-2",
-            th: "bg-surface-bg-3 text-text-2",
-            tr: "border-b border-border-subtle hover:bg-[#11203A]",
-            td: "text-text-2",
-          }}
-        >
-          <TableHeader>
-            <TableColumn>DATE</TableColumn>
-            <TableColumn>ITEM</TableColumn>
-            <TableColumn>AMOUNT</TableColumn>
-            <TableColumn>STATUS</TableColumn>
-            <TableColumn>SLOT</TableColumn>
-            <TableColumn>ACTION</TableColumn>
-          </TableHeader>
-          <TableBody items={visibleOrders}>
-            {(entry) => (
-              <TableRow key={entry.id}>
-                <TableCell>{shortDateTime(entry.date)}</TableCell>
-                <TableCell className="text-text-1">{entry.itemTitle}</TableCell>
-                <TableCell>{peso(entry.amount)}</TableCell>
-                <TableCell>
-                  <StatusChip kind="order" value={entry.status} />
-                </TableCell>
-                <TableCell>{entry.slotId ?? "N/A"}</TableCell>
-                <TableCell>
-                  <Button
-                    className="bg-brand-primary-700 text-text-1 hover:bg-brand-primary-600"
-                    size="sm"
-                    onPress={() => setSelectedOrderId(entry.id)}
-                  >
-                    View
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <ResponsiveTable>
+          <Table
+            aria-label="Order history table"
+            classNames={{
+              base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[780px]",
+              th: "bg-surface-bg-3 text-text-2",
+              tr: "border-b border-border-subtle hover:bg-[#11203A]",
+              td: "text-text-2",
+            }}
+          >
+            <TableHeader>
+              <TableColumn>DATE</TableColumn>
+              <TableColumn>ITEM</TableColumn>
+              <TableColumn>AMOUNT</TableColumn>
+              <TableColumn>STATUS</TableColumn>
+              <TableColumn>SLOT</TableColumn>
+              <TableColumn>ACTION</TableColumn>
+            </TableHeader>
+            <TableBody items={visibleOrders}>
+              {(entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell>{shortDateTime(entry.date)}</TableCell>
+                  <TableCell className="text-text-1">{entry.itemTitle}</TableCell>
+                  <TableCell>{peso(entry.amount)}</TableCell>
+                  <TableCell>
+                    <StatusChip kind="order" value={entry.status} />
+                  </TableCell>
+                  <TableCell>{entry.slotId ?? "N/A"}</TableCell>
+                  <TableCell>
+                    <Button
+                      className="btn-brand"
+                      size="sm"
+                      onPress={() => setSelectedOrderId(entry.id)}
+                    >
+                      View
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </ResponsiveTable>
       )}
 
       <Drawer
@@ -155,7 +158,7 @@ export default function HistoryPage() {
                   <p>Buyer: {selectedOrder.buyer}</p>
                   <p>Seller: {selectedOrder.seller}</p>
                   <p className="mt-2 text-xs">
-                    Refund policy reminder: ≤12h full, ≤24h 80%, &gt;24h no refund.
+                    Refund policy reminder: â‰¤12h full, â‰¤24h 80%, &gt;24h no refund.
                   </p>
                 </div>
                 <div className="space-y-3">
@@ -179,3 +182,4 @@ export default function HistoryPage() {
     </div>
   );
 }
+

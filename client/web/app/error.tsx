@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { Button } from "@heroui/button";
@@ -29,7 +29,7 @@ export default function Error({
             {error.message}
           </p>
           <Button
-            className="focus-ring w-fit bg-brand-primary-600 text-text-1 hover:bg-brand-primary-500"
+            className="focus-ring btn-cta w-fit"
             onPress={() => reset()}
           >
             Retry
@@ -39,3 +39,4 @@ export default function Error({
     </main>
   );
 }
+

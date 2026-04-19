@@ -1,10 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Tab, Tabs } from "@heroui/tabs";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 
+import { ResponsiveTable } from "@/components/unithrift/responsive-table";
 import { peso, shortDate } from "@/lib/unithrift-format";
 
 const reportRows = {
@@ -79,30 +80,33 @@ export default function AdminReportsPage() {
         </Card>
       </div>
 
-      <Table
-        aria-label="Reports table"
-        classNames={{
-          base: "border border-border-subtle rounded-xl bg-surface-bg-2",
-          th: "bg-surface-bg-3 text-text-2",
-          tr: "border-b border-border-subtle hover:bg-[#11203A]",
-          td: "text-text-2",
-        }}
-      >
-        <TableHeader>
-          <TableColumn>DATE</TableColumn>
-          <TableColumn>PRIMARY</TableColumn>
-          <TableColumn>AMOUNT</TableColumn>
-        </TableHeader>
-        <TableBody items={rows}>
-          {(row) => (
-            <TableRow key={row.key}>
-              <TableCell>{shortDate(`${row.key}T00:00:00Z`)}</TableCell>
-              <TableCell>{row.a}</TableCell>
-              <TableCell>{peso(row.b)}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <ResponsiveTable>
+        <Table
+          aria-label="Reports table"
+          classNames={{
+            base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[620px]",
+            th: "bg-surface-bg-3 text-text-2",
+            tr: "border-b border-border-subtle hover:bg-[#11203A]",
+            td: "text-text-2",
+          }}
+        >
+          <TableHeader>
+            <TableColumn>DATE</TableColumn>
+            <TableColumn>PRIMARY</TableColumn>
+            <TableColumn>AMOUNT</TableColumn>
+          </TableHeader>
+          <TableBody items={rows}>
+            {(row) => (
+              <TableRow key={row.key}>
+                <TableCell>{shortDate(`${row.key}T00:00:00Z`)}</TableCell>
+                <TableCell>{row.a}</TableCell>
+                <TableCell>{peso(row.b)}</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </ResponsiveTable>
     </div>
   );
 }
+

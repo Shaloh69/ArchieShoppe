@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -54,7 +54,7 @@ export default function KioskSellCodePage() {
             {keypad.map((digit) => (
               <Button
                 key={digit}
-                className="h-16 text-2xl bg-brand-primary-500 text-white hover:bg-brand-primary-400"
+                className="h-16 text-2xl btn-cta"
                 onPress={() => appendDigit(digit)}
               >
                 {digit}
@@ -75,7 +75,7 @@ export default function KioskSellCodePage() {
               Cancel
             </Button>
             <Button
-              className="h-14 text-lg bg-brand-cyan-600 text-white hover:brightness-110"
+              className="h-14 text-lg btn-cta"
               onPress={verifyCode}
             >
               Verify
@@ -86,3 +86,4 @@ export default function KioskSellCodePage() {
     </div>
   );
 }
+

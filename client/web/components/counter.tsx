@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Button } from "@heroui/button";
@@ -9,7 +9,7 @@ export const Counter = () => {
   return (
     <div className="flex items-center gap-3">
       <Button
-        className="min-w-20 bg-brand-primary-700 text-text-1 hover:bg-brand-primary-600"
+        className="min-w-20 btn-brand"
         onPress={() => setCount((prev) => prev - 1)}
       >
         -1
@@ -18,7 +18,7 @@ export const Counter = () => {
         {count}
       </span>
       <Button
-        className="min-w-20 bg-brand-primary-700 text-text-1 hover:bg-brand-primary-600"
+        className="min-w-20 btn-brand"
         onPress={() => setCount((prev) => prev + 1)}
       >
         +1
@@ -26,3 +26,4 @@ export const Counter = () => {
     </div>
   );
 };
+

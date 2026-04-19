@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Button } from "@heroui/button";
@@ -24,7 +24,7 @@ export default function AdminLockersPage() {
         <p className="text-sm text-text-2">Monitor slot states, command history, and emergency controls.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {lockers.map((slot) => (
           <Card
             key={slot.slotId}
@@ -64,7 +64,7 @@ export default function AdminLockersPage() {
                 </div>
                 <div className="grid gap-2">
                   <Button
-                    className="bg-brand-cyan-600 text-white hover:brightness-110"
+                    className="btn-cta"
                     onPress={() =>
                       notifySuccess({
                         title: "Unlock command sent",
@@ -75,7 +75,7 @@ export default function AdminLockersPage() {
                     Unlock (Emergency)
                   </Button>
                   <Button
-                    className="bg-brand-primary-600 text-white hover:bg-brand-primary-500"
+                    className="btn-cta"
                     onPress={() =>
                       notifyInfo({
                         title: "Lock command sent",
@@ -108,7 +108,7 @@ export default function AdminLockersPage() {
                     In-service
                   </Button>
                   <Button
-                    className="bg-brand-indigo-600 text-white hover:brightness-110"
+                    className="btn-brand"
                     onPress={() =>
                       notifySuccess({
                         title: "Reconcile completed",
@@ -127,3 +127,4 @@ export default function AdminLockersPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import { Chip } from "@heroui/chip";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 
 import { EmptyBlock } from "@/components/unithrift/state-block";
+import { ResponsiveTable } from "@/components/unithrift/responsive-table";
 import { peso, shortDateTime } from "@/lib/unithrift-format";
 import { walletBalance, walletLedger } from "@/lib/unithrift-mocks";
 import { notifyError, notifySuccess } from "@/lib/unithrift-toast";
@@ -62,7 +63,7 @@ export default function WalletPage() {
         <Card className="border border-border-subtle bg-surface-bg-2">
           <CardBody className="gap-3 p-6">
             <p className="text-sm text-text-2">Current balance</p>
-            <p className="text-4xl font-semibold text-brand-primary-300">{peso(balance)}</p>
+            <p className="text-4xl font-semibold text-brand-primary-800">{peso(balance)}</p>
             <p className="text-xs text-text-3">
               Includes held, completed, and sandbox top-up effects.
             </p>
@@ -81,7 +82,7 @@ export default function WalletPage() {
               onValueChange={setTopupAmount}
             />
             <Button
-              className="focus-ring bg-brand-primary-600 text-white hover:bg-brand-primary-500"
+              className="focus-ring btn-cta"
               onPress={onTopup}
             >
               Add funds
@@ -101,40 +102,43 @@ export default function WalletPage() {
           onAction={() => router.push("/app/browse")}
         />
       ) : (
-        <Table
-          aria-label="Wallet ledger"
-          classNames={{
-            base: "border border-border-subtle rounded-xl bg-surface-bg-2",
-            th: "bg-surface-bg-3 text-text-2",
-            tr: "border-b border-border-subtle hover:bg-[#11203A]",
-            td: "text-text-2",
-          }}
-        >
-          <TableHeader>
-            <TableColumn>DATE/TIME</TableColumn>
-            <TableColumn>TYPE</TableColumn>
-            <TableColumn>AMOUNT</TableColumn>
-            <TableColumn>REFERENCE</TableColumn>
-          </TableHeader>
-          <TableBody items={sortedLedger}>
-            {(row) => (
-              <TableRow key={row.id}>
-                <TableCell>{shortDateTime(row.timestamp)}</TableCell>
-                <TableCell>
-                  <Chip className={ledgerChipClass[row.type] ?? "bg-surface-bg-3 text-text-2"} size="sm">
-                    {row.type}
-                  </Chip>
-                </TableCell>
-                <TableCell className={row.amount >= 0 ? "text-status-success-600" : "text-status-danger-600"}>
-                  {row.amount >= 0 ? "+" : "-"}
-                  {peso(Math.abs(row.amount))}
-                </TableCell>
-                <TableCell>{row.reference}</TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <ResponsiveTable>
+          <Table
+            aria-label="Wallet ledger"
+            classNames={{
+              base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[640px]",
+              th: "bg-surface-bg-3 text-text-2",
+              tr: "border-b border-border-subtle hover:bg-[#11203A]",
+              td: "text-text-2",
+            }}
+          >
+            <TableHeader>
+              <TableColumn>DATE/TIME</TableColumn>
+              <TableColumn>TYPE</TableColumn>
+              <TableColumn>AMOUNT</TableColumn>
+              <TableColumn>REFERENCE</TableColumn>
+            </TableHeader>
+            <TableBody items={sortedLedger}>
+              {(row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{shortDateTime(row.timestamp)}</TableCell>
+                  <TableCell>
+                    <Chip className={ledgerChipClass[row.type] ?? "bg-surface-bg-3 text-text-2"} size="sm">
+                      {row.type}
+                    </Chip>
+                  </TableCell>
+                  <TableCell className={row.amount >= 0 ? "text-status-success-600" : "text-status-danger-600"}>
+                    {row.amount >= 0 ? "+" : "-"}
+                    {peso(Math.abs(row.amount))}
+                  </TableCell>
+                  <TableCell>{row.reference}</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </ResponsiveTable>
       )}
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Button } from "@heroui/button";
@@ -8,6 +8,7 @@ import { Select, SelectItem } from "@heroui/select";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { ResponsiveTable } from "@/components/unithrift/responsive-table";
 import { peso } from "@/lib/unithrift-format";
 import { notifyInfo, notifySuccess } from "@/lib/unithrift-toast";
 
@@ -82,44 +83,46 @@ export default function AdminUsersPage() {
         </Select>
       </div>
 
-      <Table
-        aria-label="Users table"
-        classNames={{
-          base: "border border-border-subtle rounded-xl bg-surface-bg-2",
-          th: "bg-surface-bg-3 text-text-2",
-          tr: "border-b border-border-subtle hover:bg-[#11203A]",
-          td: "text-text-2",
-        }}
-      >
-        <TableHeader>
-          <TableColumn>USER ID</TableColumn>
-          <TableColumn>NAME</TableColumn>
-          <TableColumn>ROLE</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn>WALLET</TableColumn>
-          <TableColumn>ACTION</TableColumn>
-        </TableHeader>
-        <TableBody items={filtered} emptyContent="No users found with current filters.">
-          {(entry) => (
-            <TableRow key={entry.id}>
-              <TableCell>{entry.id}</TableCell>
-              <TableCell>{entry.name}</TableCell>
-              <TableCell>{entry.role}</TableCell>
-              <TableCell>{entry.status}</TableCell>
-              <TableCell>{peso(entry.wallet)}</TableCell>
-              <TableCell>
-                <Button
-                  className="bg-brand-primary-700 text-text-1 hover:bg-brand-primary-600"
-                  size="sm"
-                  onPress={() => setSelectedId(entry.id)}
-                >
-                  View
-                </Button>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <ResponsiveTable>
+        <Table
+          aria-label="Users table"
+          classNames={{
+            base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[760px]",
+            th: "bg-surface-bg-3 text-text-2",
+            tr: "border-b border-border-subtle hover:bg-[#11203A]",
+            td: "text-text-2",
+          }}
+        >
+          <TableHeader>
+            <TableColumn>USER ID</TableColumn>
+            <TableColumn>NAME</TableColumn>
+            <TableColumn>ROLE</TableColumn>
+            <TableColumn>STATUS</TableColumn>
+            <TableColumn>WALLET</TableColumn>
+            <TableColumn>ACTION</TableColumn>
+          </TableHeader>
+          <TableBody items={filtered} emptyContent="No users found with current filters.">
+            {(entry) => (
+              <TableRow key={entry.id}>
+                <TableCell>{entry.id}</TableCell>
+                <TableCell>{entry.name}</TableCell>
+                <TableCell>{entry.role}</TableCell>
+                <TableCell>{entry.status}</TableCell>
+                <TableCell>{peso(entry.wallet)}</TableCell>
+                <TableCell>
+                  <Button
+                    className="btn-brand"
+                    size="sm"
+                    onPress={() => setSelectedId(entry.id)}
+                  >
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </ResponsiveTable>
 
       <Drawer
         isOpen={Boolean(selected)}
@@ -163,7 +166,7 @@ export default function AdminUsersPage() {
                     Enable
                   </Button>
                   <Button
-                    className="bg-brand-indigo-600 text-white hover:brightness-110"
+                    className="btn-brand"
                     onPress={() =>
                       notifyInfo({
                         title: "Seller codes invalidated",
@@ -182,3 +185,4 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+

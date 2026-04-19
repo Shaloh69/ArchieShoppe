@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -103,7 +103,7 @@ export default function RegisterPage() {
           ))}
         </Select>
         <Button
-          className="focus-ring bg-brand-primary-600 text-white hover:bg-brand-primary-500 active:bg-brand-primary-700"
+          className="focus-ring btn-cta"
           isLoading={loading}
           onPress={onSubmit}
         >
@@ -111,7 +111,7 @@ export default function RegisterPage() {
         </Button>
         <p className="text-sm text-text-2">
           Already have an account?{" "}
-          <NextLink className="text-brand-primary-400 hover:text-brand-primary-300" href="/auth/login">
+          <NextLink className="text-brand-primary-700 hover:text-brand-primary-800" href="/auth/login">
             Sign in
           </NextLink>
         </p>
@@ -119,3 +119,4 @@ export default function RegisterPage() {
     </Card>
   );
 }
+

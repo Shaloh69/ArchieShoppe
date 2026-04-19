@@ -1,4 +1,4 @@
-export default function AboutLayout({
+﻿export default function AboutLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -11,3 +11,4 @@ export default function AboutLayout({
     </section>
   );
 }
+

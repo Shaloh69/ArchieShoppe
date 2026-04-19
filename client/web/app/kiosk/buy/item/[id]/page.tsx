@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -24,7 +24,7 @@ export default function KioskBuyItemPage() {
           <CardBody className="gap-4 p-8 text-center">
             <p className="text-2xl font-semibold text-status-danger-600">Item unavailable</p>
             <Button
-              className="h-14 text-lg bg-brand-primary-500 text-white hover:bg-brand-primary-400"
+              className="h-14 text-lg btn-cta"
               onPress={() => router.push("/kiosk/buy/browse")}
             >
               Back to browse
@@ -43,10 +43,10 @@ export default function KioskBuyItemPage() {
           <div className="space-y-4">
             <h1 className="text-3xl font-semibold text-text-1">{item.title}</h1>
             <p className="text-lg text-text-2">{item.condition}</p>
-            <p className="text-4xl font-semibold text-brand-primary-300">{peso(item.price)}</p>
+            <p className="text-4xl font-semibold text-brand-primary-800">{peso(item.price)}</p>
             <p className="text-base text-text-2">{item.description}</p>
             <Button
-              className="kiosk-glow h-16 w-full text-xl bg-brand-primary-500 text-white hover:bg-brand-primary-400"
+              className="kiosk-glow h-16 w-full text-xl btn-cta"
               onPress={() => router.push(`/kiosk/buy/confirm?itemId=${item.id}`)}
             >
               Confirm purchase
@@ -57,3 +57,4 @@ export default function KioskBuyItemPage() {
     </div>
   );
 }
+

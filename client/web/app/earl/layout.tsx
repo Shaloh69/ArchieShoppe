@@ -1,4 +1,4 @@
-export default function DocsLayout({
+﻿export default function DocsLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -11,3 +11,4 @@ export default function DocsLayout({
     </section>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ReactNode } from "react";
 import { Button } from "@heroui/button";
@@ -26,7 +26,7 @@ export function EmptyBlock({
           <p className="mt-2 max-w-lg text-sm text-text-2">{description}</p>
           {actionLabel && onAction ? (
             <Button
-              className="focus-ring mt-4 bg-brand-primary-600 text-text-1 hover:bg-brand-primary-500"
+              className="focus-ring btn-cta mt-4"
               onPress={onAction}
             >
               {actionLabel}
@@ -103,3 +103,4 @@ export function CardFrame({
     </Card>
   );
 }
+

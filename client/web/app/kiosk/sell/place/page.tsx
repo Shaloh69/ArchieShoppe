@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -44,7 +44,7 @@ function KioskSellPlaceContent() {
           />
           <p className="text-sm text-text-3">Sensor poll status: {progress}%</p>
           <Button
-            className="h-14 text-lg bg-brand-cyan-600 text-white hover:brightness-110"
+            className="h-14 text-lg btn-cta"
             onPress={onDone}
           >
             Done
@@ -62,3 +62,4 @@ export default function KioskSellPlacePage() {
     </Suspense>
   );
 }
+

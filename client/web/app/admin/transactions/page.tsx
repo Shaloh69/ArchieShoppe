@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Button } from "@heroui/button";
@@ -8,6 +8,7 @@ import { Select, SelectItem } from "@heroui/select";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 
 import { StatusChip } from "@/components/unithrift/status-chip";
+import { ResponsiveTable } from "@/components/unithrift/responsive-table";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { peso, shortDateTime } from "@/lib/unithrift-format";
 import { orders } from "@/lib/unithrift-mocks";
@@ -73,52 +74,54 @@ export default function AdminTransactionsPage() {
         </Select>
       </div>
 
-      <Table
-        aria-label="Admin transactions"
-        classNames={{
-          base: "border border-border-subtle rounded-xl bg-surface-bg-2",
-          th: "bg-surface-bg-3 text-text-2",
-          tr: "border-b border-border-subtle hover:bg-[#11203A]",
-          td: "text-text-2",
-        }}
-      >
-        <TableHeader>
-          <TableColumn>ORDER ID</TableColumn>
-          <TableColumn>DATE</TableColumn>
-          <TableColumn>BUYER</TableColumn>
-          <TableColumn>SELLER</TableColumn>
-          <TableColumn>ITEM</TableColumn>
-          <TableColumn>AMOUNT</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn>SLOT</TableColumn>
-          <TableColumn>ACTIONS</TableColumn>
-        </TableHeader>
-        <TableBody items={filtered} emptyContent="No transactions match these filters.">
-          {(entry) => (
-            <TableRow key={entry.id}>
-              <TableCell>{entry.id}</TableCell>
-              <TableCell>{shortDateTime(entry.date)}</TableCell>
-              <TableCell>{entry.buyer}</TableCell>
-              <TableCell>{entry.seller}</TableCell>
-              <TableCell>{entry.itemTitle}</TableCell>
-              <TableCell>{peso(entry.amount)}</TableCell>
-              <TableCell>
-                <StatusChip kind="order" value={entry.status} />
-              </TableCell>
-              <TableCell>{entry.slotId ?? "N/A"}</TableCell>
-              <TableCell>
-                <Button
-                  className="bg-brand-primary-700 text-text-1 hover:bg-brand-primary-600"
-                  size="sm"
-                  onPress={() => setSelectedId(entry.id)}
-                >
-                  View
-                </Button>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <ResponsiveTable>
+        <Table
+          aria-label="Admin transactions"
+          classNames={{
+            base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[1080px]",
+            th: "bg-surface-bg-3 text-text-2",
+            tr: "border-b border-border-subtle hover:bg-[#11203A]",
+            td: "text-text-2",
+          }}
+        >
+          <TableHeader>
+            <TableColumn>ORDER ID</TableColumn>
+            <TableColumn>DATE</TableColumn>
+            <TableColumn>BUYER</TableColumn>
+            <TableColumn>SELLER</TableColumn>
+            <TableColumn>ITEM</TableColumn>
+            <TableColumn>AMOUNT</TableColumn>
+            <TableColumn>STATUS</TableColumn>
+            <TableColumn>SLOT</TableColumn>
+            <TableColumn>ACTIONS</TableColumn>
+          </TableHeader>
+          <TableBody items={filtered} emptyContent="No transactions match these filters.">
+            {(entry) => (
+              <TableRow key={entry.id}>
+                <TableCell>{entry.id}</TableCell>
+                <TableCell>{shortDateTime(entry.date)}</TableCell>
+                <TableCell>{entry.buyer}</TableCell>
+                <TableCell>{entry.seller}</TableCell>
+                <TableCell>{entry.itemTitle}</TableCell>
+                <TableCell>{peso(entry.amount)}</TableCell>
+                <TableCell>
+                  <StatusChip kind="order" value={entry.status} />
+                </TableCell>
+                <TableCell>{entry.slotId ?? "N/A"}</TableCell>
+                <TableCell>
+                  <Button
+                    className="btn-brand"
+                    size="sm"
+                    onPress={() => setSelectedId(entry.id)}
+                  >
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </ResponsiveTable>
 
       <Drawer
         isOpen={Boolean(selected)}
@@ -164,7 +167,7 @@ export default function AdminTransactionsPage() {
                     Freeze
                   </Button>
                   <Button
-                    className="bg-brand-cyan-600 text-white hover:brightness-110"
+                    className="btn-cta"
                     onPress={() =>
                       notifyInfo({
                         title: "Order unfrozen",
@@ -194,3 +197,4 @@ export default function AdminTransactionsPage() {
     </div>
   );
 }
+

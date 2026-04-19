@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -67,7 +67,7 @@ function KioskBuyConfirmContent() {
               Cancel
             </Button>
             <Button
-              className="h-14 text-lg bg-brand-primary-500 text-white hover:bg-brand-primary-400"
+              className="h-14 text-lg btn-cta"
               isLoading={loading}
               onPress={onConfirm}
             >
@@ -87,3 +87,4 @@ export default function KioskBuyConfirmPage() {
     </Suspense>
   );
 }
+

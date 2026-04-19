@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Drawer, DrawerBody, DrawerContent, DrawerHeader } from "@heroui/drawer";
@@ -7,6 +7,7 @@ import { Select, SelectItem } from "@heroui/select";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 import { Button } from "@heroui/button";
 
+import { ResponsiveTable } from "@/components/unithrift/responsive-table";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { auditLogs } from "@/lib/unithrift-mocks";
 import { shortDateTime } from "@/lib/unithrift-format";
@@ -63,46 +64,48 @@ export default function AdminAuditPage() {
         </Select>
       </div>
 
-      <Table
-        aria-label="Audit log table"
-        classNames={{
-          base: "border border-border-subtle rounded-xl bg-surface-bg-2",
-          th: "bg-surface-bg-3 text-text-2",
-          tr: "border-b border-border-subtle hover:bg-[#11203A]",
-          td: "text-text-2",
-        }}
-      >
-        <TableHeader>
-          <TableColumn>TIME</TableColumn>
-          <TableColumn>TYPE</TableColumn>
-          <TableColumn>ACTOR</TableColumn>
-          <TableColumn>ENTITY</TableColumn>
-          <TableColumn>ACTION</TableColumn>
-          <TableColumn>METADATA</TableColumn>
-          <TableColumn>VIEW</TableColumn>
-        </TableHeader>
-        <TableBody items={filtered} emptyContent="No logs match filters.">
-          {(entry) => (
-            <TableRow key={entry.id}>
-              <TableCell>{shortDateTime(entry.time)}</TableCell>
-              <TableCell>{entry.type}</TableCell>
-              <TableCell>{entry.actor}</TableCell>
-              <TableCell>{entry.entity}</TableCell>
-              <TableCell>{entry.action}</TableCell>
-              <TableCell className="max-w-44 truncate">{entry.metadata}</TableCell>
-              <TableCell>
-                <Button
-                  className="bg-brand-primary-700 text-text-1 hover:bg-brand-primary-600"
-                  size="sm"
-                  onPress={() => setSelectedId(entry.id)}
-                >
-                  View
-                </Button>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <ResponsiveTable>
+        <Table
+          aria-label="Audit log table"
+          classNames={{
+            base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[980px]",
+            th: "bg-surface-bg-3 text-text-2",
+            tr: "border-b border-border-subtle hover:bg-[#11203A]",
+            td: "text-text-2",
+          }}
+        >
+          <TableHeader>
+            <TableColumn>TIME</TableColumn>
+            <TableColumn>TYPE</TableColumn>
+            <TableColumn>ACTOR</TableColumn>
+            <TableColumn>ENTITY</TableColumn>
+            <TableColumn>ACTION</TableColumn>
+            <TableColumn>METADATA</TableColumn>
+            <TableColumn>VIEW</TableColumn>
+          </TableHeader>
+          <TableBody items={filtered} emptyContent="No logs match filters.">
+            {(entry) => (
+              <TableRow key={entry.id}>
+                <TableCell>{shortDateTime(entry.time)}</TableCell>
+                <TableCell>{entry.type}</TableCell>
+                <TableCell>{entry.actor}</TableCell>
+                <TableCell>{entry.entity}</TableCell>
+                <TableCell>{entry.action}</TableCell>
+                <TableCell className="max-w-44 truncate">{entry.metadata}</TableCell>
+                <TableCell>
+                  <Button
+                    className="btn-brand"
+                    size="sm"
+                    onPress={() => setSelectedId(entry.id)}
+                  >
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </ResponsiveTable>
 
       <Drawer
         isOpen={Boolean(selected)}
@@ -125,3 +128,4 @@ export default function AdminAuditPage() {
     </div>
   );
 }
+

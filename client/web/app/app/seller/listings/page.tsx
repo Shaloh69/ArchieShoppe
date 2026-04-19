@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Button } from "@heroui/button";
@@ -8,10 +8,11 @@ import { Drawer, DrawerBody, DrawerContent, DrawerHeader } from "@heroui/drawer"
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 
 import { EmptyBlock } from "@/components/unithrift/state-block";
+import { ResponsiveTable } from "@/components/unithrift/responsive-table";
 import { StatusChip } from "@/components/unithrift/status-chip";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { peso, shortDateTime } from "@/lib/unithrift-format";
-import { lockers, myListings } from "@/lib/unithrift-mocks";
+import { peso, shortDate, shortDateTime } from "@/lib/unithrift-format";
+import { lockers, lockerSubscriptionPlans, myListings } from "@/lib/unithrift-mocks";
 import { notifyInfo, notifySuccess } from "@/lib/unithrift-toast";
 
 const statuses = ["all", "DRAFT", "ACTIVE", "SOLD", "REMOVED", "PENDING"];
@@ -38,6 +39,11 @@ export default function SellerListingsPage() {
   const selectedLocker = useMemo(
     () => lockers.find((entry) => entry.slotId === selected?.slotId) ?? null,
     [selected?.slotId],
+  );
+  const selectedPlan = useMemo(
+    () =>
+      lockerSubscriptionPlans.find((entry) => entry.id === selected?.lockerSubscriptionPlanId) ?? null,
+    [selected?.lockerSubscriptionPlanId],
   );
 
   return (
@@ -72,66 +78,68 @@ export default function SellerListingsPage() {
       {filtered.length === 0 ? (
         <EmptyBlock description="No listings match current filters." title="No listing records" />
       ) : (
-        <Table
-          aria-label="My listings table"
-          classNames={{
-            base: "border border-border-subtle rounded-xl bg-surface-bg-2",
-            th: "bg-surface-bg-3 text-text-2",
-            tr: "border-b border-border-subtle hover:bg-[#11203A]",
-            td: "text-text-2",
-          }}
-        >
-          <TableHeader>
-            <TableColumn>ITEM</TableColumn>
-            <TableColumn>PRICE</TableColumn>
-            <TableColumn>SLOT</TableColumn>
-            <TableColumn>STATUS</TableColumn>
-            <TableColumn>UPDATED</TableColumn>
-            <TableColumn>ACTIONS</TableColumn>
-          </TableHeader>
-          <TableBody items={filtered}>
-            {(item) => (
-              <TableRow key={item.id}>
-                <TableCell className="text-text-1">{item.title}</TableCell>
-                <TableCell>{peso(item.price)}</TableCell>
-                <TableCell>{item.slotId ?? "N/A"}</TableCell>
-                <TableCell>
-                  <StatusChip kind="item" value={item.status} />
-                </TableCell>
-                <TableCell>{shortDateTime(item.updatedAt)}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      className="bg-brand-primary-700 text-text-1 hover:bg-brand-primary-600"
-                      size="sm"
-                      onPress={() => {
-                        setSelectedId(item.id);
-                        notifyInfo({
-                          title: "Editing mode",
-                          description: "Listing detail drawer opened.",
-                        });
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      className="bg-status-danger-600 text-white hover:brightness-110"
-                      size="sm"
-                      onPress={() =>
-                        notifySuccess({
-                          title: "Listing unlisted",
-                          description: `${item.title} set to removed state.`,
-                        })
-                      }
-                    >
-                      Unlist
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <ResponsiveTable>
+          <Table
+            aria-label="My listings table"
+            classNames={{
+              base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[860px]",
+              th: "bg-surface-bg-3 text-text-2",
+              tr: "border-b border-border-subtle hover:bg-[#11203A]",
+              td: "text-text-2",
+            }}
+          >
+            <TableHeader>
+              <TableColumn>ITEM</TableColumn>
+              <TableColumn>PRICE</TableColumn>
+              <TableColumn>SLOT</TableColumn>
+              <TableColumn>STATUS</TableColumn>
+              <TableColumn>UPDATED</TableColumn>
+              <TableColumn>ACTIONS</TableColumn>
+            </TableHeader>
+            <TableBody items={filtered}>
+              {(item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="text-text-1">{item.title}</TableCell>
+                  <TableCell>{peso(item.price)}</TableCell>
+                  <TableCell>{item.slotId ?? "N/A"}</TableCell>
+                  <TableCell>
+                    <StatusChip kind="item" value={item.status} />
+                  </TableCell>
+                  <TableCell>{shortDateTime(item.updatedAt)}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        className="btn-brand"
+                        size="sm"
+                        onPress={() => {
+                          setSelectedId(item.id);
+                          notifyInfo({
+                            title: "Editing mode",
+                            description: "Listing detail drawer opened.",
+                          });
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        className="bg-status-danger-600 text-white hover:brightness-110"
+                        size="sm"
+                        onPress={() =>
+                          notifySuccess({
+                            title: "Listing unlisted",
+                            description: `${item.title} set to removed state.`,
+                          })
+                        }
+                      >
+                        Unlist
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </ResponsiveTable>
       )}
 
       <Drawer
@@ -152,6 +160,8 @@ export default function SellerListingsPage() {
                   <p>Category: {selected.category}</p>
                   <p>Condition: {selected.condition}</p>
                   <p>Slot: {selected.slotId ?? "Unassigned"}</p>
+                  <p>Plan: {selectedPlan?.name ?? "No active subscription"}</p>
+                  <p>Plan end: {selected?.lockerSubscriptionEndsAt ? shortDate(selected.lockerSubscriptionEndsAt) : "N/A"}</p>
                 </div>
                 {selectedLocker ? (
                   <div className="rounded-lg border border-border-subtle bg-surface-bg-3 p-3">
@@ -168,3 +178,4 @@ export default function SellerListingsPage() {
     </div>
   );
 }
+
