@@ -293,6 +293,14 @@ model PaymongoPayment {
   @@map("paymongo_payments")
 }
 
+model PlatformConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_configs")
+}
+
 model AuditLog {
   id        String    @id @default(cuid())
   type      AuditType

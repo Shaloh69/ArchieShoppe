@@ -17,6 +17,23 @@ router.get('/plans', async (_req, res: Response) => {
   res.json({ plans });
 });
 
+router.patch('/plans/:id', authenticate, adminOnly, async (req: AuthRequest, res: Response) => {
+  const { price, name } = req.body;
+  if (price === undefined && name === undefined) {
+    res.status(400).json({ message: 'price or name is required' });
+    return;
+  }
+  if (price !== undefined) {
+    const p = parseFloat(price);
+    if (isNaN(p) || p <= 0) {
+      res.status(400).json({ message: 'price must be a positive number' });
+      return;
+    }
+  }
+  const plan = await lockerService.updateSubscriptionPlan(req.params.id, { price, name });
+  res.json({ plan });
+});
+
 router.get('/:slotId', async (req, res: Response) => {
   const slot = await lockerService.getSlot(req.params.slotId);
   res.json({ slot });

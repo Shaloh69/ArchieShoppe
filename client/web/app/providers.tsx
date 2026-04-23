@@ -35,21 +35,21 @@ export function Providers({ children, themeProps }: ProvidersProps) {
             placement="top-right"
             toastProps={{
               classNames: {
-                base: "bg-surface-bg-3 border border-border-strong text-text-1 shadow-2xl",
-                title: "text-text-1",
-                description: "text-text-2",
-                closeButton: "btn-brand text-white",
-                progressTrack: "bg-surface-bg-1",
-                progressIndicator: "bg-brand-cyan-400",
+                base: "bg-surface-bg-2 border border-border-subtle shadow-xl rounded-xl backdrop-blur",
+                title: "text-text-1 font-semibold text-sm",
+                description: "text-text-3 text-xs mt-0.5",
+                closeButton: "text-text-3 hover:text-text-1 bg-surface-bg-3 rounded-md",
+                progressTrack: "bg-surface-bg-3 rounded-full h-0.5",
+                progressIndicator: "bg-brand-primary-600 rounded-full",
               },
               motionProps: {
-                initial: { opacity: 0, x: 30, scale: 0.97 },
-                animate: { opacity: 1, x: 0, scale: 1 },
-                exit: { opacity: 0, x: 20, scale: 0.97 },
+                initial: { opacity: 0, x: 24, scale: 0.95, filter: "blur(4px)" },
+                animate: { opacity: 1, x: 0,  scale: 1,    filter: "blur(0px)" },
+                exit:    { opacity: 0, x: 16, scale: 0.97 },
                 transition: {
                   type: "spring",
-                  stiffness: 360,
-                  damping: 28,
+                  stiffness: 420,
+                  damping: 32,
                 },
               },
               shouldShowTimeoutProgress: true,

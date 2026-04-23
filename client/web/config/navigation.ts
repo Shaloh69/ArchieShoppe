@@ -57,4 +57,10 @@ export const adminNav: NavItem[] = [
     href: "/admin/audit",
     group: "governance",
   },
+  {
+    label: "Settings",
+    shortLabel: "Settings",
+    href: "/admin/settings",
+    group: "governance",
+  },
 ];

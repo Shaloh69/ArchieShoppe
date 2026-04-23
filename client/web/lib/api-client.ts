@@ -250,6 +250,24 @@ export const usersApi = {
     }),
 };
 
+// ─── Config (admin) ───────────────────────────────────────────────────────────
+export const configApi = {
+  getAll: () =>
+    apiFetch<{ config: Record<string, string> }>("/api/config"),
+
+  setPlatformFee: (fee_rate: number) =>
+    apiFetch<{ fee_rate: number; message: string }>("/api/config/platform-fee", {
+      method: "PATCH",
+      body: JSON.stringify({ fee_rate }),
+    }),
+
+  updatePlan: (id: string, data: { price?: number; name?: string }) =>
+    apiFetch<{ plan: ApiLockerPlan }>(`/api/lockers/plans/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+};
+
 // ─── Reports (admin) ──────────────────────────────────────────────────────────
 export const reportsApi = {
   overview: () =>
@@ -283,6 +301,8 @@ export interface ApiItem {
   category: string;
   condition: string;
   price: string;
+  displayPrice: number;
+  serviceFee: number;
   description: string;
   imageUrl?: string;
   sellerId: string;
@@ -292,6 +312,7 @@ export interface ApiItem {
   slot?: { slotId: string; status: string };
   subscriptionPlan?: ApiLockerPlan;
   subscriptionEndsAt?: string;
+  sellerCode?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -355,6 +376,7 @@ export interface ApiLockerPlan {
   durationDays: number;
   price: string;
   highlight: boolean;
+  dailyRate?: number;
 }
 
 export interface ApiRefund {

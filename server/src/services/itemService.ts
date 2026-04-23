@@ -4,17 +4,14 @@ import { debitWallet } from './walletService';
 import { createAuditLog } from '../utils/audit';
 import { broadcastToAdmins } from '../ws/broadcaster';
 import { generatePersonalCode } from '../utils/codeGenerator';
+import { getPlatformFeeRate } from './configService';
 
-// 5 % service fee added on top of the seller's listed price — paid by the buyer.
-// Shown on all browse/item pages so buyers see the real checkout amount upfront.
-export const BUYER_FEE_RATE = 0.05;
-
-export function withDisplayPrice<T extends { price: { toNumber(): number } }>(item: T) {
+export function withDisplayPrice<T extends { price: { toNumber(): number } }>(item: T, feeRate: number) {
   const base = item.price.toNumber();
   return {
     ...item,
-    displayPrice: Math.ceil(base * (1 + BUYER_FEE_RATE) * 100) / 100,
-    serviceFee: Math.ceil(base * BUYER_FEE_RATE * 100) / 100,
+    displayPrice: Math.ceil(base * (1 + feeRate) * 100) / 100,
+    serviceFee: Math.ceil(base * feeRate * 100) / 100,
   };
 }
 
@@ -69,7 +66,7 @@ export async function browseItems(query: z.infer<typeof browseSchema>) {
         ? { price: 'desc' as const }
         : { createdAt: 'desc' as const };
 
-  const [total, raw] = await Promise.all([
+  const [total, raw, feeRate] = await Promise.all([
     prisma.item.count({ where: where as never }),
     prisma.item.findMany({
       where: where as never,
@@ -81,9 +78,10 @@ export async function browseItems(query: z.infer<typeof browseSchema>) {
         slot: { select: { slotId: true, status: true } },
       },
     }),
+    getPlatformFeeRate(),
   ]);
 
-  return { total, page, limit, items: raw.map(withDisplayPrice) };
+  return { total, page, limit, items: raw.map((item) => withDisplayPrice(item, feeRate)) };
 }
 
 export async function getItemById(itemId: string) {
@@ -96,7 +94,8 @@ export async function getItemById(itemId: string) {
     },
   });
   if (!item) throw Object.assign(new Error('Item not found'), { status: 404 });
-  return withDisplayPrice(item);
+  const feeRate = await getPlatformFeeRate();
+  return withDisplayPrice(item, feeRate);
 }
 
 export async function createItem(
@@ -156,7 +155,8 @@ export async function createItem(
   });
   broadcastToAdmins({ type: 'ITEM_UPDATE', itemId: item.id, status: 'DRAFT' });
 
-  return withDisplayPrice(item);
+  const feeRate = await getPlatformFeeRate();
+  return withDisplayPrice(item, feeRate);
 }
 
 /**
@@ -237,13 +237,13 @@ export async function getMyListings(sellerId: string, page = 1, limit = 20) {
       },
     }),
   ]);
-  // Include sellerCode so the mobile app can show it to the seller
+  const feeRate = await getPlatformFeeRate();
   return {
     total,
     page,
     limit,
     items: items.map((item) => ({
-      ...withDisplayPrice(item),
+      ...withDisplayPrice(item, feeRate),
       sellerCode: item.sellerCode,
       subscriptionPlan: item.subscriptionPlan
         ? {
@@ -273,7 +273,8 @@ export async function getAllItems(page = 1, limit = 20, status?: string) {
       },
     }),
   ]);
-  return { total, page, limit, items: items.map(withDisplayPrice) };
+  const feeRate = await getPlatformFeeRate();
+  return { total, page, limit, items: items.map((item) => withDisplayPrice(item, feeRate)) };
 }
 
 export async function getSubscriptionPlansWithDailyRate() {

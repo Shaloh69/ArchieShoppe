@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@heroui/button";
@@ -138,7 +138,7 @@ export default function SellerListingsPage() {
             classNames={{
               base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[860px]",
               th: "bg-surface-bg-3 text-text-2",
-              tr: "border-b border-border-subtle hover:bg-[#11203A]",
+              tr: "border-b border-border-subtle hover:bg-brand-primary-50",
               td: "text-text-2",
             }}
           >
@@ -233,3 +233,4 @@ export default function SellerListingsPage() {
     </div>
   );
 }
+

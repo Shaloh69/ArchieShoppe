@@ -13,14 +13,9 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   }
 
   console.log('[seed] Seeding subscription plans...');
-  // Upfront locker rental fee for the chosen duration.
-  // dailyRate = price / durationDays is computed on the API; not stored separately.
   const plans = [
-    { planKey: 'DAILY_1',   name: '1 Day',   durationDays: 1,  price: 29,  highlight: false },
-    { planKey: 'DAILY_3',   name: '3 Days',  durationDays: 3,  price: 75,  highlight: false },
-    { planKey: 'WEEKLY_1',  name: '1 Week',  durationDays: 7,  price: 149, highlight: true  },
-    { planKey: 'WEEKLY_2',  name: '2 Weeks', durationDays: 14, price: 249, highlight: false },
-    { planKey: 'MONTHLY_1', name: '1 Month', durationDays: 30, price: 399, highlight: false },
+    { planKey: 'WEEKLY_1',  name: '1 Week',  durationDays: 7,  price: 149, highlight: false },
+    { planKey: 'MONTHLY_1', name: '1 Month', durationDays: 30, price: 399, highlight: true  },
   ];
   for (const p of plans) {
     await prisma.lockerSubscriptionPlan.upsert({
@@ -29,6 +24,14 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
       create: p,
     });
   }
+
+  console.log('[seed] Seeding platform config...');
+  // platform_fee_rate: percentage added to item price paid by buyer (e.g. 8 = 8%)
+  await prisma.platformConfig.upsert({
+    where: { key: 'platform_fee_rate' },
+    update: {},
+    create: { key: 'platform_fee_rate', value: '8' },
+  });
 
   const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@unithrift.edu.ph';
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'AdminPassword123!';
