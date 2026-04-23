@@ -25,7 +25,7 @@
 
 // ─── Server ──────────────────────────────────────────────────────────────────
 // Format: ws://host:port/ws/esp?deviceId=Kiosk-1
-#define WS_HOST         "your-server.onrender.com"
+#define WS_HOST         "unithrift-api.onrender.com"
 #define WS_PORT         443
 #define WS_PATH         "/ws/esp?deviceId=Kiosk-1"
 #define WS_USE_SSL      true   // set false for local dev (port 3001)
