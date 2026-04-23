@@ -3,4 +3,3 @@
 export default function KioskRootPage() {
   redirect("/kiosk/welcome");
 }
-

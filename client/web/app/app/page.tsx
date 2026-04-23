@@ -3,4 +3,3 @@
 export default function AppHomePage() {
   redirect("/app/browse");
 }
-

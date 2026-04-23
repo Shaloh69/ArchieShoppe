@@ -3,4 +3,3 @@
 export default function AdminHomePage() {
   redirect("/admin/overview");
 }
-

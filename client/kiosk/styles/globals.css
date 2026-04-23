@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@plugin '../hero.ts';
+
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "font", sans-serif;
+  --font-mono: "monospace", monospace;
+
+  /* UniKiosk — Dark high-contrast palette for touchscreen kiosk */
+
+  /* Primary: Electric Cyan (visible on dark, accessible) */
+  --color-brand-primary-950: #001a1f;
+  --color-brand-primary-900: #002d36;
+  --color-brand-primary-800: #004d5e;
+  --color-brand-primary-700: #0369a1;
+  --color-brand-primary-600: #0891b2;
+  --color-brand-primary-500: #06b6d4;
+  --color-brand-primary-400: #22d3ee;
+  --color-brand-primary-300: #67e8f9;
+  --color-brand-primary-200: #a5f3fc;
+  --color-brand-primary-100: #cffafe;
+  --color-brand-primary-50:  #ecfeff;
+
+  /* Action: Vivid Orange (confirm/buy buttons — high contrast on dark) */
+  --color-brand-action-700: #c2380f;
+  --color-brand-action-600: #e8450e;
+  --color-brand-action-500: #f26542;
+  --color-brand-action-100: #fdddd6;
+
+  /* Surfaces — very dark navy */
+  --color-surface-bg-0: #040d14;
+  --color-surface-bg-1: #071422;
+  --color-surface-bg-2: #0c1d30;
+  --color-surface-bg-3: #122540;
+  --color-surface-bg-4: #1a3050;
+
+  /* Text — bright for readability on dark */
+  --color-text-1: #f0f9ff;
+  --color-text-2: #bae6fd;
+  --color-text-3: #7dd3fc;
+  --color-text-inverse: #040d14;
+  --color-text-on-primary: #040d14;
+
+  /* Borders */
+  --color-border-subtle: #1e3a5a;
+  --color-border-strong: #2a4d72;
+
+  /* Status */
+  --color-status-success-600: #22c55e;
+  --color-status-success-100: #14532d;
+  --color-status-warning-600: #fbbf24;
+  --color-status-warning-100: #451a03;
+  --color-status-danger-600: #f87171;
+  --color-status-danger-100: #450a0a;
+  --color-status-info-600: #22d3ee;
+  --color-status-info-100: #083344;
+  --color-status-escrow-600: #a78bfa;
+  --color-status-escrow-100: #2e1065;
+
+  /* Viz */
+  --color-viz-1: #22d3ee;
+  --color-viz-2: #f26542;
+  --color-viz-3: #fbbf24;
+  --color-viz-4: #22c55e;
+  --color-viz-5: #a78bfa;
+  --color-viz-6: #f472b6;
+}
+
+* {
+  border-color: theme(--color-border-subtle);
+}
+
+html,
+body {
+  background: theme(--color-surface-bg-0);
+  color: theme(--color-text-1);
+}
+
+a {
+  color: theme(--color-brand-primary-400);
+  transition: color 180ms ease;
+}
+
+a:hover {
+  color: theme(--color-brand-primary-300);
+}
+
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-bg-0;
+}
+
+/* Big touch-friendly glow on interactive elements */
+.kiosk-glow {
+  box-shadow: 0 0 0 3px rgb(34 211 238 / 0.25), 0 0 20px rgb(34 211 238 / 0.1);
+}
+
+.kiosk-glow-action {
+  box-shadow: 0 0 0 3px rgb(242 101 66 / 0.3), 0 0 24px rgb(242 101 66 / 0.15);
+}
+
+/* Primary CTA on kiosk — vivid orange, large touch target */
+.btn-cta {
+  @apply text-white bg-brand-action-600 hover:bg-brand-action-700 active:brightness-110;
+  min-height: 3.5rem;
+}
+
+/* Brand action — cyan */
+.btn-brand {
+  @apply text-brand-primary-900 bg-brand-primary-400 hover:bg-brand-primary-300 active:bg-brand-primary-400;
+}
+
+.btn-soft {
+  @apply text-text-1 bg-surface-bg-3 hover:bg-surface-bg-4;
+}
+
+.panel-surface {
+  @apply border border-border-subtle bg-surface-bg-2;
+}

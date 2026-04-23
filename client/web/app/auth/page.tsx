@@ -3,4 +3,3 @@
 export default function AuthRootPage() {
   redirect("/auth/login");
 }
-

@@ -7,4 +7,3 @@ import { walletBalance } from "@/lib/unithrift-mocks";
 export function Navbar() {
   return <AppTopbar navItems={webNav} walletBalance={walletBalance} />;
 }
-

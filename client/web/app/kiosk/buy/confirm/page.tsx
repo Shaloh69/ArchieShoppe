@@ -1,24 +1,39 @@
-﻿"use client";
+"use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
+import { Spinner } from "@heroui/spinner";
 
-import { items } from "@/lib/unithrift-mocks";
+import { itemsApi, ordersApi, type ApiItem } from "@/lib/api-client";
 import { peso } from "@/lib/unithrift-format";
 import { notifyError, notifySuccess } from "@/lib/unithrift-toast";
 
 function KioskBuyConfirmContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(false);
+  const [item, setItem] = useState<ApiItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const itemId = searchParams.get("itemId");
 
-  const item = useMemo(
-    () => items.find((entry) => entry.id === itemId && entry.status === "ACTIVE"),
-    [itemId],
-  );
+  useEffect(() => {
+    if (!itemId) {
+      setLoading(false);
+      return;
+    }
+    (async () => {
+      try {
+        const res = await itemsApi.getById(itemId);
+        if (res.item.status === "ACTIVE") setItem(res.item);
+      } catch {
+        // item unavailable
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [itemId]);
 
   const onConfirm = async () => {
     if (!item) {
@@ -29,27 +44,46 @@ function KioskBuyConfirmContent() {
       router.push("/kiosk/buy/browse");
       return;
     }
-
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    setLoading(false);
-    notifySuccess({
-      title: "Order confirmed",
-      description: `Unlock issued for slot ${item.slotId}.`,
-    });
-    router.push(`/kiosk/buy/success?slot=${item.slotId ?? "N/A"}&orderId=ord-demo`);
+    setSubmitting(true);
+    try {
+      const res = await ordersApi.create(item.id);
+      notifySuccess({
+        title: "Order confirmed",
+        description: `Unlock issued for slot ${res.order.slotId}. Code: ${res.order.personalCode}`,
+      });
+      router.push(
+        `/kiosk/buy/success?slot=${res.order.slotId ?? "N/A"}&orderId=${res.order.id}`,
+      );
+    } catch (e) {
+      notifyError({
+        title: "Purchase failed",
+        description: (e as Error).message,
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-3xl items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-3xl items-center">
       <Card className="w-full border border-border-subtle bg-surface-bg-2">
         <CardBody className="space-y-5 p-8">
-          <h1 className="text-3xl font-semibold text-text-1">Confirm Purchase</h1>
+          <h1 className="text-3xl font-semibold text-text-1">
+            Confirm Purchase
+          </h1>
           {item ? (
             <>
               <div className="rounded-lg border border-border-subtle bg-surface-bg-3 p-4 text-lg text-text-2">
                 <p>Item: {item.title}</p>
-                <p>Amount: {peso(item.price)}</p>
+                <p>Amount: {peso(Number(item.price))}</p>
                 <p>Slot: {item.slotId ?? "N/A"}</p>
               </div>
               <p className="text-sm text-status-warning-600">
@@ -57,7 +91,9 @@ function KioskBuyConfirmContent() {
               </p>
             </>
           ) : (
-            <p className="text-status-danger-600">Item context missing. Return to browse.</p>
+            <p className="text-status-danger-600">
+              Item context missing. Return to browse.
+            </p>
           )}
           <div className="grid gap-3 md:grid-cols-2">
             <Button
@@ -68,7 +104,8 @@ function KioskBuyConfirmContent() {
             </Button>
             <Button
               className="h-14 text-lg btn-cta"
-              isLoading={loading}
+              isDisabled={!item}
+              isLoading={submitting}
               onPress={onConfirm}
             >
               Confirm
@@ -82,9 +119,10 @@ function KioskBuyConfirmContent() {
 
 export default function KioskBuyConfirmPage() {
   return (
-    <Suspense fallback={<div className="text-text-2">Loading confirmation...</div>}>
+    <Suspense
+      fallback={<div className="text-text-2">Loading confirmation...</div>}
+    >
       <KioskBuyConfirmContent />
     </Suspense>
   );
 }
-

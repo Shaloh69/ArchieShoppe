@@ -39,7 +39,9 @@ export default function KioskBuyLoginPage() {
         <CardBody className="gap-4 p-8">
           <h1 className="text-3xl font-semibold text-text-1">Buyer Login</h1>
           <Input
-            classNames={{ inputWrapper: "h-14 bg-surface-bg-3 border border-border-subtle" }}
+            classNames={{
+              inputWrapper: "h-14 bg-surface-bg-3 border border-border-subtle",
+            }}
             label="Username / Email"
             labelPlacement="outside"
             placeholder="Enter credentials"
@@ -48,7 +50,9 @@ export default function KioskBuyLoginPage() {
             onValueChange={setIdentity}
           />
           <Input
-            classNames={{ inputWrapper: "h-14 bg-surface-bg-3 border border-border-subtle" }}
+            classNames={{
+              inputWrapper: "h-14 bg-surface-bg-3 border border-border-subtle",
+            }}
             label="Password"
             labelPlacement="outside"
             placeholder="Password"
@@ -77,4 +81,3 @@ export default function KioskBuyLoginPage() {
     </div>
   );
 }
-

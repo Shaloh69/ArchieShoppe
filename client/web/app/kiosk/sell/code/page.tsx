@@ -38,7 +38,9 @@ export default function KioskSellCodePage() {
     <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-3xl items-center">
       <Card className="w-full border border-border-subtle bg-surface-bg-2">
         <CardBody className="space-y-5 p-8">
-          <h1 className="text-3xl font-semibold text-text-1">Enter Seller Code</h1>
+          <h1 className="text-3xl font-semibold text-text-1">
+            Enter Seller Code
+          </h1>
           <Input
             classNames={{
               input: "text-center text-4xl tracking-[0.6em] text-text-1",
@@ -74,10 +76,7 @@ export default function KioskSellCodePage() {
             >
               Cancel
             </Button>
-            <Button
-              className="h-14 text-lg btn-cta"
-              onPress={verifyCode}
-            >
+            <Button className="h-14 text-lg btn-cta" onPress={verifyCode}>
               Verify
             </Button>
           </div>
@@ -86,4 +85,3 @@ export default function KioskSellCodePage() {
     </div>
   );
 }
-

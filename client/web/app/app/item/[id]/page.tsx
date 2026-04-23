@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Modal,
@@ -11,36 +11,64 @@ import {
 } from "@heroui/modal";
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
+import { Spinner } from "@heroui/spinner";
 
 import { EmptyBlock } from "@/components/unithrift/state-block";
 import { StatusChip } from "@/components/unithrift/status-chip";
+import { useAuth } from "@/contexts/auth-context";
+import { itemsApi, ordersApi, type ApiItem } from "@/lib/api-client";
 import { peso } from "@/lib/unithrift-format";
-import { items, walletBalance } from "@/lib/unithrift-mocks";
 import { notifyError, notifySuccess } from "@/lib/unithrift-toast";
 
 export default function ItemDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
+  const [item, setItem] = useState<ApiItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const item = useMemo(
-    () => items.find((entry) => entry.id === params.id && entry.status === "ACTIVE"),
-    [params.id],
-  );
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await itemsApi.getById(params.id);
+        if (res.item.status !== "ACTIVE") {
+          setNotFound(true);
+          return;
+        }
+        setItem(res.item);
+      } catch {
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [params.id]);
 
-  if (!item) {
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (notFound || !item) {
     return (
       <EmptyBlock
         actionLabel="Back to browse"
         description="This listing may have been sold or removed."
-        title="Item not available (409)"
+        title="Item not available"
         onAction={() => router.push("/app/browse")}
       />
     );
   }
 
-  const canAfford = walletBalance >= item.price;
+  const balance = Number(user?.walletBalance ?? 0);
+  const canAfford = balance >= Number(item.price);
 
   const confirmPurchase = async () => {
     if (!canAfford) {
@@ -50,32 +78,38 @@ export default function ItemDetailPage() {
       });
       return;
     }
-
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    setIsSubmitting(false);
-    setIsConfirmOpen(false);
-
-    notifySuccess({
-      title: "Order confirmed",
-      description: `Locker ${item.slotId ?? "N/A"} unlock request issued.`,
-    });
-    router.push("/app/history");
+    try {
+      const res = await ordersApi.create(item.id);
+      setIsConfirmOpen(false);
+      notifySuccess({
+        title: "Order confirmed",
+        description: `Locker ${res.order.slotId ?? "N/A"} unlock request issued. Code: ${res.order.personalCode}`,
+      });
+      router.push("/app/history");
+    } catch (e) {
+      notifyError({
+        title: "Purchase failed",
+        description: (e as Error).message,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
       <Card className="border border-border-subtle bg-surface-bg-2">
         <CardBody className="gap-4 p-5">
-          <div className="aspect-[4/3] rounded-xl bg-gradient-to-br from-brand-primary-900 via-brand-primary-700 to-brand-indigo-600" />
-          <div className="grid grid-cols-3 gap-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={`thumb-${i}`}
-                className="aspect-[4/3] rounded-lg bg-surface-bg-3 border border-border-subtle"
-              />
-            ))}
-          </div>
+          {item.imageUrl ? (
+            <img
+              alt={item.title}
+              className="aspect-[4/3] w-full rounded-xl object-cover"
+              src={`${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
+            />
+          ) : (
+            <div className="aspect-[4/3] rounded-xl bg-gradient-to-br from-brand-primary-900 via-brand-primary-700 to-brand-indigo-600" />
+          )}
         </CardBody>
       </Card>
 
@@ -83,18 +117,24 @@ export default function ItemDetailPage() {
         <CardBody className="gap-4 p-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-text-1">{item.title}</h1>
-              <p className="text-sm text-text-2">Sold by {item.sellerName}</p>
+              <h1 className="text-2xl font-semibold text-text-1">
+                {item.title}
+              </h1>
+              <p className="text-sm text-text-2">
+                Sold by {item.seller?.fullName ?? "—"}
+              </p>
             </div>
             <StatusChip kind="item" value={item.status} />
           </div>
-          <p className="text-3xl font-semibold text-brand-primary-800">{peso(item.price)}</p>
+          <p className="text-3xl font-semibold text-brand-primary-800">
+            {peso(Number(item.price))}
+          </p>
           <p className="text-sm text-text-2">{item.description}</p>
           <div className="rounded-lg border border-border-subtle bg-surface-bg-3 p-3 text-sm text-text-2">
             <p>Condition: {item.condition}</p>
             <p>Category: {item.category}</p>
             <p>Locker slot: {item.slotId ?? "Unassigned"}</p>
-            <p>Wallet balance: {peso(walletBalance)}</p>
+            <p>Your balance: {peso(balance)}</p>
           </div>
           <Button
             className="focus-ring btn-cta disabled:bg-border-strong disabled:text-text-3"
@@ -117,7 +157,7 @@ export default function ItemDetailPage() {
           <ModalBody>
             <div className="space-y-2 text-sm text-text-2">
               <p>Item: {item.title}</p>
-              <p>Total: {peso(item.price)}</p>
+              <p>Total: {peso(Number(item.price))}</p>
               <p>Hold policy: payment held for up to 24 hours.</p>
             </div>
           </ModalBody>
@@ -138,4 +178,3 @@ export default function ItemDetailPage() {
     </div>
   );
 }
-

@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Projects/**)",
+      "Read(//d/Projects-Shem/**)",
+      "Bash(npx prisma *)",
+      "WebFetch(domain:www.heroui.com)",
+      "WebFetch(domain:heroui.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:v3.heroui.com)",
+      "Bash(mkdir -p admin/app/auth/login admin/app/'\\(workspace\\)'/overview admin/app/'\\(workspace\\)'/transactions admin/app/'\\(workspace\\)'/refunds admin/app/'\\(workspace\\)'/lockers admin/app/'\\(workspace\\)'/listings admin/app/'\\(workspace\\)'/users admin/app/'\\(workspace\\)'/audit admin/app/'\\(workspace\\)'/reports admin/components admin/config admin/contexts admin/hooks admin/lib admin/public admin/styles admin/types)",
+      "Bash(mkdir -p shop/app/auth/login shop/app/'\\(main\\)'/browse shop/app/'\\(main\\)'/item/'\\\\[id\\\\]' shop/app/'\\(main\\)'/sell shop/app/'\\(main\\)'/history shop/app/'\\(main\\)'/wallet shop/app/'\\(main\\)'/listings shop/components/unithrift shop/config shop/contexts shop/hooks shop/lib shop/public shop/styles shop/types)",
+      "Bash(mkdir -p kiosk/app/welcome kiosk/app/buy/login kiosk/app/buy/browse kiosk/app/buy/item/'\\\\[id\\\\]' kiosk/app/buy/confirm kiosk/app/buy/success kiosk/app/sell/code kiosk/app/sell/slot kiosk/app/sell/place kiosk/components/unithrift kiosk/config kiosk/contexts kiosk/hooks kiosk/lib kiosk/public kiosk/styles kiosk/types)",
+      "Bash(cp app/admin/overview/page.tsx ../admin/app/'\\(workspace\\)'/overview/page.tsx)",
+      "Bash(cp app/admin/transactions/page.tsx ../admin/app/'\\(workspace\\)'/transactions/page.tsx)",
+      "Bash(cp app/admin/refunds/page.tsx ../admin/app/'\\(workspace\\)'/refunds/page.tsx)",
+      "Bash(cp app/admin/lockers/page.tsx ../admin/app/'\\(workspace\\)'/lockers/page.tsx)",
+      "Bash(cp app/admin/listings/page.tsx ../admin/app/'\\(workspace\\)'/listings/page.tsx)",
+      "Bash(cp app/app/browse/page.tsx ../shop/app/'\\(main\\)'/browse/page.tsx)",
+      "Bash(cp app/app/item/[id]/page.tsx ../shop/app/'\\(main\\)'/item/'\\\\[id\\\\]'/page.tsx)",
+      "Bash(cp app/app/sell/page.tsx ../shop/app/'\\(main\\)'/sell/page.tsx)",
+      "Bash(cp app/app/history/page.tsx ../shop/app/'\\(main\\)'/history/page.tsx)",
+      "Bash(cp app/app/wallet/page.tsx ../shop/app/'\\(main\\)'/wallet/page.tsx)",
+      "Bash(cp app/kiosk/welcome/page.tsx ../kiosk/app/welcome/page.tsx)",
+      "Bash(cp app/kiosk/buy/page.tsx ../kiosk/app/buy/page.tsx)",
+      "Bash(cp app/kiosk/buy/login/page.tsx ../kiosk/app/buy/login/page.tsx)",
+      "Bash(cp app/kiosk/buy/browse/page.tsx ../kiosk/app/buy/browse/page.tsx)",
+      "Bash(cp app/kiosk/buy/item/[id]/page.tsx ../kiosk/app/buy/item/'\\\\[id\\\\]'/page.tsx)"
+    ]
+  }
+}

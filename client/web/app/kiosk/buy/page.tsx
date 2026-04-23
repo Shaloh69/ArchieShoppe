@@ -3,4 +3,3 @@
 export default function KioskBuyRootPage() {
   redirect("/kiosk/buy/login");
 }
-

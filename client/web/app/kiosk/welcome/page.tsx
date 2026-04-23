@@ -8,8 +8,12 @@ export default function KioskWelcomePage() {
       <Card className="w-full border border-border-subtle bg-surface-bg-2">
         <CardBody className="gap-8 p-8 md:p-12">
           <div>
-            <p className="text-sm uppercase tracking-[0.25em] text-brand-primary-700">UniThrift Kiosk</p>
-            <h1 className="mt-2 text-4xl font-semibold text-text-1 md:text-5xl">Choose Transaction</h1>
+            <p className="text-sm uppercase tracking-[0.25em] text-brand-primary-700">
+              UniThrift Kiosk
+            </p>
+            <h1 className="mt-2 text-4xl font-semibold text-text-1 md:text-5xl">
+              Choose Transaction
+            </h1>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <Button
@@ -32,4 +36,3 @@ export default function KioskWelcomePage() {
     </div>
   );
 }
-

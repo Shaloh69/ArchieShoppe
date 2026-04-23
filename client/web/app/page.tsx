@@ -5,7 +5,8 @@ import { Button } from "@heroui/button";
 const entryPoints = [
   {
     title: "Buyer + Seller Web App",
-    description: "Browse items, manage wallet, buy/sell flows, and listing management.",
+    description:
+      "Browse items, manage wallet, buy/sell flows, and listing management.",
     href: "/app/browse",
     cta: "Open Web App",
   },
@@ -17,7 +18,8 @@ const entryPoints = [
   },
   {
     title: "Admin Console",
-    description: "Transactions, refunds, lockers, moderation, users, reporting, and audit.",
+    description:
+      "Transactions, refunds, lockers, moderation, users, reporting, and audit.",
     href: "/admin/overview",
     cta: "Open Admin",
   },
@@ -35,8 +37,8 @@ export default function Home() {
             Smart Locker Thrift Platform
           </h1>
           <p className="mt-4 max-w-3xl text-base text-text-2 md:text-lg">
-            Full UI implementation scaffold with HeroUI components, operational status
-            chips, and role-specific flows for web, kiosk, and admin.
+            Full UI implementation scaffold with HeroUI components, operational
+            status chips, and role-specific flows for web, kiosk, and admin.
           </p>
         </div>
 
@@ -48,7 +50,9 @@ export default function Home() {
             >
               <CardBody className="flex h-full justify-between gap-6 p-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-text-1">{entry.title}</h2>
+                  <h2 className="text-xl font-semibold text-text-1">
+                    {entry.title}
+                  </h2>
                   <p className="mt-3 text-sm leading-relaxed text-text-2">
                     {entry.description}
                   </p>
@@ -68,4 +72,3 @@ export default function Home() {
     </main>
   );
 }
-

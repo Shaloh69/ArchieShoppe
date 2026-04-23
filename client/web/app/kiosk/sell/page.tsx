@@ -3,4 +3,3 @@
 export default function KioskSellRootPage() {
   redirect("/kiosk/sell/code");
 }
-

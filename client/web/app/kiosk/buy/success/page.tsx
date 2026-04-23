@@ -33,9 +33,15 @@ function KioskBuySuccessContent() {
           <div className="kiosk-glow rounded-full border border-status-success-600/40 bg-status-success-100 p-5 text-4xl text-status-success-600">
             âœ“
           </div>
-          <h1 className="text-4xl font-semibold text-text-1">Purchase Successful</h1>
-          <p className="text-lg text-text-2">Please claim your item from Slot #{slot}</p>
-          <p className="text-sm text-text-3">Returning to welcome screen in {secondsLeft}s...</p>
+          <h1 className="text-4xl font-semibold text-text-1">
+            Purchase Successful
+          </h1>
+          <p className="text-lg text-text-2">
+            Please claim your item from Slot #{slot}
+          </p>
+          <p className="text-sm text-text-3">
+            Returning to welcome screen in {secondsLeft}s...
+          </p>
           <Button
             className="h-14 min-w-48 text-lg btn-cta"
             onPress={() => router.replace("/kiosk/welcome")}
@@ -50,9 +56,10 @@ function KioskBuySuccessContent() {
 
 export default function KioskBuySuccessPage() {
   return (
-    <Suspense fallback={<div className="text-text-2">Loading success state...</div>}>
+    <Suspense
+      fallback={<div className="text-text-2">Loading success state...</div>}
+    >
       <KioskBuySuccessContent />
     </Suspense>
   );
 }
-

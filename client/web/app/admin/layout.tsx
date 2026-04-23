@@ -8,4 +8,3 @@ export default function AdminLayout({
 }) {
   return <AdminWorkspace navItems={adminNav}>{children}</AdminWorkspace>;
 }
-

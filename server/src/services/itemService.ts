@@ -1,0 +1,202 @@
+import { z } from 'zod';
+import { prisma } from '../config/db';
+import { debitWallet } from './walletService';
+import { createAuditLog } from '../utils/audit';
+import { broadcastToAdmins } from '../ws/broadcaster';
+
+export const createItemSchema = z.object({
+  title: z.string().min(3).max(200),
+  category: z.string().min(1).max(100),
+  condition: z.enum(['NEW', 'LIKE_NEW', 'GOOD', 'FAIR']),
+  price: z.number().positive().max(100000),
+  description: z.string().min(10).max(2000),
+  subscriptionPlanId: z.string().cuid(),
+});
+
+export const updateItemSchema = z.object({
+  title: z.string().min(3).max(200).optional(),
+  category: z.string().min(1).max(100).optional(),
+  condition: z.enum(['NEW', 'LIKE_NEW', 'GOOD', 'FAIR']).optional(),
+  price: z.number().positive().max(100000).optional(),
+  description: z.string().min(10).max(2000).optional(),
+});
+
+export const browseSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  category: z.string().optional(),
+  condition: z.string().optional(),
+  minPrice: z.coerce.number().optional(),
+  maxPrice: z.coerce.number().optional(),
+  search: z.string().optional(),
+  sortBy: z.enum(['price_asc', 'price_desc', 'newest']).default('newest'),
+});
+
+export async function browseItems(query: z.infer<typeof browseSchema>) {
+  const { page, limit, category, condition, minPrice, maxPrice, search, sortBy } = query;
+  const skip = (page - 1) * limit;
+
+  const where: Record<string, unknown> = { status: 'ACTIVE' };
+  if (category) where['category'] = category;
+  if (condition) where['condition'] = condition;
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    where['price'] = {};
+    if (minPrice !== undefined) (where['price'] as Record<string, unknown>)['gte'] = minPrice;
+    if (maxPrice !== undefined) (where['price'] as Record<string, unknown>)['lte'] = maxPrice;
+  }
+  if (search) {
+    where['OR'] = [{ title: { contains: search } }, { description: { contains: search } }];
+  }
+
+  const orderBy =
+    sortBy === 'price_asc'
+      ? { price: 'asc' as const }
+      : sortBy === 'price_desc'
+        ? { price: 'desc' as const }
+        : { createdAt: 'desc' as const };
+
+  const [total, items] = await Promise.all([
+    prisma.item.count({ where: where as never }),
+    prisma.item.findMany({
+      where: where as never,
+      orderBy,
+      skip,
+      take: limit,
+      include: {
+        seller: { select: { id: true, fullName: true } },
+        slot: { select: { slotId: true, status: true } },
+      },
+    }),
+  ]);
+
+  return { total, page, limit, items };
+}
+
+export async function getItemById(itemId: string) {
+  const item = await prisma.item.findUnique({
+    where: { id: itemId },
+    include: {
+      seller: { select: { id: true, fullName: true } },
+      slot: { select: { slotId: true, status: true } },
+      subscriptionPlan: true,
+    },
+  });
+  if (!item) throw Object.assign(new Error('Item not found'), { status: 404 });
+  return item;
+}
+
+export async function createItem(
+  sellerId: string,
+  data: z.infer<typeof createItemSchema>,
+  imageUrl?: string,
+) {
+  const plan = await prisma.lockerSubscriptionPlan.findUnique({
+    where: { id: data.subscriptionPlanId },
+  });
+  if (!plan) throw Object.assign(new Error('Subscription plan not found'), { status: 404 });
+
+  // Find an available locker slot
+  const slot = await prisma.lockerSlot.findFirst({ where: { status: 'EMPTY', currentItem: null } });
+  if (!slot) throw Object.assign(new Error('No locker slots available'), { status: 503 });
+
+  const planPrice = plan.price.toNumber();
+  await debitWallet(sellerId, planPrice, 'SLOT_RENTAL', undefined, `Slot rental: ${plan.name}`);
+
+  const subscriptionEndsAt = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
+
+  const item = await prisma.item.create({
+    data: {
+      title: data.title,
+      category: data.category,
+      condition: data.condition,
+      price: data.price,
+      description: data.description,
+      imageUrl,
+      sellerId,
+      status: 'DRAFT',
+      slotId: slot.slotId,
+      subscriptionPlanId: data.subscriptionPlanId,
+      subscriptionEndsAt,
+    },
+    include: {
+      seller: { select: { id: true, fullName: true } },
+      slot: { select: { slotId: true } },
+      subscriptionPlan: true,
+    },
+  });
+
+  await createAuditLog('ORDER', sellerId, item.id, 'ITEM_CREATED', {
+    slotId: slot.slotId,
+    plan: plan.planKey,
+  });
+  broadcastToAdmins({ type: 'ITEM_UPDATE', itemId: item.id, status: 'DRAFT' });
+
+  return item;
+}
+
+export async function activateItem(itemId: string, sellerId: string) {
+  const item = await prisma.item.findUnique({ where: { id: itemId } });
+  if (!item) throw Object.assign(new Error('Item not found'), { status: 404 });
+  if (item.sellerId !== sellerId) throw Object.assign(new Error('Access denied'), { status: 403 });
+  if (item.status !== 'DRAFT')
+    throw Object.assign(new Error('Only DRAFT items can be activated'), { status: 400 });
+
+  const updated = await prisma.item.update({ where: { id: itemId }, data: { status: 'ACTIVE' } });
+  broadcastToAdmins({ type: 'ITEM_UPDATE', itemId, status: 'ACTIVE' });
+  return updated;
+}
+
+export async function removeItem(itemId: string, actorId: string, isAdmin: boolean) {
+  const item = await prisma.item.findUnique({ where: { id: itemId } });
+  if (!item) throw Object.assign(new Error('Item not found'), { status: 404 });
+  if (!isAdmin && item.sellerId !== actorId)
+    throw Object.assign(new Error('Access denied'), { status: 403 });
+  if (item.status === 'PENDING')
+    throw Object.assign(new Error('Cannot remove item with pending order'), { status: 400 });
+
+  const updated = await prisma.item.update({
+    where: { id: itemId },
+    data: { status: 'REMOVED', slotId: null },
+  });
+  await createAuditLog('ORDER', actorId, itemId, 'ITEM_REMOVED', null);
+  broadcastToAdmins({ type: 'ITEM_UPDATE', itemId, status: 'REMOVED' });
+  return updated;
+}
+
+export async function getMyListings(sellerId: string, page = 1, limit = 20) {
+  const skip = (page - 1) * limit;
+  const [total, items] = await Promise.all([
+    prisma.item.count({ where: { sellerId } }),
+    prisma.item.findMany({
+      where: { sellerId },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      include: {
+        slot: { select: { slotId: true, status: true } },
+        subscriptionPlan: { select: { name: true, durationDays: true } },
+        orders: { select: { id: true, status: true }, orderBy: { createdAt: 'desc' }, take: 1 },
+      },
+    }),
+  ]);
+  return { total, page, limit, items };
+}
+
+export async function getAllItems(page = 1, limit = 20, status?: string) {
+  const where = status ? { status: status as never } : {};
+  const skip = (page - 1) * limit;
+  const [total, items] = await Promise.all([
+    prisma.item.count({ where }),
+    prisma.item.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      include: {
+        seller: { select: { id: true, fullName: true, email: true } },
+        slot: { select: { slotId: true, status: true } },
+      },
+    }),
+  ]);
+  return { total, page, limit, items };
+}

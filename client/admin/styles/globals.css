@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@plugin '../hero.ts';
+
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "font", sans-serif;
+  --font-mono: "monospace", monospace;
+
+  /* Retail Fresh - Blue + Coral + Peach + Cream */
+  --color-brand-primary-950: #1e3a8a;
+  --color-brand-primary-900: #1e40af;
+  --color-brand-primary-800: #1d4ed8;
+  --color-brand-primary-700: #2563eb;
+  --color-brand-primary-600: #3b82f6;
+  --color-brand-primary-500: #60a5fa;
+  --color-brand-primary-400: #93c5fd;
+  --color-brand-primary-300: #bfdbfe;
+  --color-brand-primary-200: #dbeafe;
+  --color-brand-primary-100: #eff6ff;
+  --color-brand-primary-50: #f8fbff;
+
+  --color-brand-coral-700: #e11d48;
+  --color-brand-coral-600: #f43f5e;
+  --color-brand-coral-500: #fb7185;
+  --color-brand-coral-400: #fda4af;
+  --color-brand-coral-100: #ffe4e6;
+
+  --color-brand-peach-600: #fb923c;
+  --color-brand-peach-500: #fdba74;
+  --color-brand-peach-400: #fed7aa;
+  --color-brand-peach-100: #fff1e6;
+
+  --color-brand-cyan-600: #0891b2;
+  --color-brand-cyan-400: #22d3ee;
+
+  --color-brand-indigo-600: #4f46e5;
+  --color-brand-indigo-400: #818cf8;
+
+  --color-surface-bg-0: #fff7ed;
+  --color-surface-bg-1: #fffbf7;
+  --color-surface-bg-2: #ffffff;
+  --color-surface-bg-3: #fff1e6;
+
+  --color-text-1: #0f172a;
+  --color-text-2: #334155;
+  --color-text-3: #64748b;
+  --color-text-inverse: #0f172a;
+
+  --color-border-subtle: #e5e7eb;
+  --color-border-strong: #cbd5e1;
+
+  --color-status-success-600: #16a34a;
+  --color-status-success-100: #dcfce7;
+  --color-status-warning-600: #d97706;
+  --color-status-warning-100: #ffedd5;
+  --color-status-danger-600: #dc2626;
+  --color-status-danger-100: #fee2e2;
+  --color-status-info-600: #0891b2;
+  --color-status-info-100: #cffafe;
+  --color-status-escrow-600: #4f46e5;
+  --color-status-escrow-100: #e0e7ff;
+
+  --color-viz-1: #1e6ad6;
+  --color-viz-2: #22d3ee;
+  --color-viz-3: #4f46e5;
+  --color-viz-4: #16a34a;
+  --color-viz-5: #d97706;
+  --color-viz-6: #dc2626;
+}
+
+* {
+  border-color: theme(--color-border-subtle);
+}
+
+html,
+body {
+  background: theme(--color-surface-bg-0);
+  color: theme(--color-text-1);
+}
+
+a {
+  color: theme(--color-brand-primary-700);
+  transition: color 180ms ease;
+}
+
+a:hover {
+  color: theme(--color-brand-primary-800);
+}
+
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-bg-0;
+}
+
+.kiosk-glow {
+  box-shadow: 0 0 0 3px rgb(34 211 238 / 0.2);
+}
+
+.btn-cta {
+  @apply text-white bg-brand-coral-500 hover:bg-brand-coral-600 active:bg-brand-coral-700;
+}
+
+.btn-brand {
+  @apply text-white bg-brand-primary-700 hover:bg-brand-primary-800 active:bg-brand-primary-900;
+}
+
+.btn-soft {
+  @apply text-text-1 bg-brand-peach-100 hover:bg-brand-peach-400;
+}
+
+.panel-surface {
+  @apply border border-border-subtle bg-surface-bg-2 shadow-sm;
+}

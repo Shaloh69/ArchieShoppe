@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+@plugin '../hero.ts';
+
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "font", sans-serif;
+  --font-mono: "monospace", monospace;
+
+  /* UniShop — Shopee-inspired Warm Orange + Teal palette */
+
+  /* Primary: Shopee Orange */
+  --color-brand-primary-950: #7c1d06;
+  --color-brand-primary-900: #9a2a0a;
+  --color-brand-primary-800: #c2380f;
+  --color-brand-primary-700: #e8450e;
+  --color-brand-primary-600: #ee4d2d;
+  --color-brand-primary-500: #f26542;
+  --color-brand-primary-400: #f8906e;
+  --color-brand-primary-300: #fbbba8;
+  --color-brand-primary-200: #fdddd6;
+  --color-brand-primary-100: #fff0ec;
+  --color-brand-primary-50:  #fff9f8;
+
+  /* Accent: Teal */
+  --color-brand-teal-700: #0e7490;
+  --color-brand-teal-600: #0891b2;
+  --color-brand-teal-500: #06b6d4;
+  --color-brand-teal-400: #22d3ee;
+  --color-brand-teal-200: #a5f3fc;
+  --color-brand-teal-100: #cffafe;
+
+  /* Accent: Golden yellow (sale badges) */
+  --color-brand-gold-600: #d97706;
+  --color-brand-gold-500: #f59e0b;
+  --color-brand-gold-400: #fbbf24;
+  --color-brand-gold-100: #fef3c7;
+
+  /* Accent: Green (in-stock, success) */
+  --color-brand-green-600: #16a34a;
+  --color-brand-green-500: #22c55e;
+  --color-brand-green-100: #dcfce7;
+
+  /* Surfaces — warm whites */
+  --color-surface-bg-0: #fff9f7;
+  --color-surface-bg-1: #ffffff;
+  --color-surface-bg-2: #ffffff;
+  --color-surface-bg-3: #fff0ec;
+  --color-surface-bg-4: #fdddd6;
+
+  /* Text */
+  --color-text-1: #1a0a05;
+  --color-text-2: #4a2010;
+  --color-text-3: #8a5240;
+  --color-text-inverse: #ffffff;
+  --color-text-on-primary: #ffffff;
+
+  /* Borders */
+  --color-border-subtle: #f0d4cc;
+  --color-border-strong: #e8b8ac;
+
+  /* Status */
+  --color-status-success-600: #16a34a;
+  --color-status-success-100: #dcfce7;
+  --color-status-warning-600: #d97706;
+  --color-status-warning-100: #fef3c7;
+  --color-status-danger-600: #dc2626;
+  --color-status-danger-100: #fee2e2;
+  --color-status-info-600: #0891b2;
+  --color-status-info-100: #cffafe;
+  --color-status-escrow-600: #7c3aed;
+  --color-status-escrow-100: #ede9fe;
+
+  /* Viz */
+  --color-viz-1: #ee4d2d;
+  --color-viz-2: #06b6d4;
+  --color-viz-3: #f59e0b;
+  --color-viz-4: #22c55e;
+  --color-viz-5: #7c3aed;
+  --color-viz-6: #ec4899;
+}
+
+* {
+  border-color: theme(--color-border-subtle);
+}
+
+html,
+body {
+  background: theme(--color-surface-bg-0);
+  color: theme(--color-text-1);
+}
+
+a {
+  color: theme(--color-brand-primary-600);
+  transition: color 180ms ease;
+}
+
+a:hover {
+  color: theme(--color-brand-primary-700);
+}
+
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-bg-0;
+}
+
+/* Shopee-style sale badge shimmer */
+.sale-shimmer {
+  background: linear-gradient(135deg, #ee4d2d 0%, #f59e0b 100%);
+}
+
+/* Primary CTA — Shopee orange */
+.btn-cta {
+  @apply text-white bg-brand-primary-600 hover:bg-brand-primary-700 active:bg-brand-primary-800;
+}
+
+/* Secondary brand action */
+.btn-brand {
+  @apply text-white bg-brand-teal-600 hover:bg-brand-teal-700 active:bg-brand-teal-700;
+}
+
+.btn-soft {
+  @apply text-text-1 bg-brand-primary-100 hover:bg-brand-primary-200;
+}
+
+.panel-surface {
+  @apply border border-border-subtle bg-surface-bg-2 shadow-sm;
+}
+
+/* Product card hover lift */
+.product-card {
+  @apply transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-md;
+}
+
+/* Bottom navigation bar */
+.bottom-nav {
+  @apply fixed bottom-0 left-0 right-0 z-50 border-t border-border-subtle bg-surface-bg-1 safe-area-inset-bottom;
+}
