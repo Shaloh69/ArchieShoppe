@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { ThemeProviderProps } from "next-themes";
 
@@ -34,27 +34,15 @@ export function Providers({ children, themeProps }: ProvidersProps) {
             maxVisibleToasts={4}
             placement="top-right"
             toastProps={{
-              classNames: {
-                base: "bg-surface-bg-1 border border-border-subtle text-text-1 shadow-xl rounded-xl",
-                title: "font-semibold text-text-1",
-                description: "text-text-3",
-                closeButton: "text-text-3 hover:text-text-1",
-                progressTrack: "bg-surface-bg-3",
-                progressIndicator: "bg-brand-primary-600",
-              },
-              motionProps: {
-                initial: { opacity: 0, y: -10, scale: 0.96 },
-                animate: { opacity: 1, y: 0, scale: 1 },
-                exit: { opacity: 0, y: -8, scale: 0.97 },
-                transition: {
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 30,
-                },
-              },
+              variant: "flat",
               shouldShowTimeoutProgress: true,
               timeout: 4000,
-              variant: "flat",
+              motionProps: {
+                initial: { opacity: 0, y: -14, scale: 0.94 },
+                animate: { opacity: 1, y: 0,   scale: 1    },
+                exit:    { opacity: 0, y: -10,  scale: 0.96 },
+                transition: { type: "spring", stiffness: 420, damping: 32 },
+              },
             }}
           />
         </AuthProvider>

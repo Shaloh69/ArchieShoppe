@@ -10,9 +10,7 @@
   --font-sans: "font", sans-serif;
   --font-mono: "monospace", monospace;
 
-  /* UniShop — Shopee-inspired Warm Orange + Teal palette */
-
-  /* Primary: Shopee Orange */
+  /* ── Primary: Shopee Coral-Orange ───────────────────────────────────── */
   --color-brand-primary-950: #7c1d06;
   --color-brand-primary-900: #9a2a0a;
   --color-brand-primary-800: #c2380f;
@@ -25,7 +23,7 @@
   --color-brand-primary-100: #fff0ec;
   --color-brand-primary-50:  #fff9f8;
 
-  /* Accent: Teal */
+  /* ── Accent: Teal ────────────────────────────────────────────────────── */
   --color-brand-teal-700: #0e7490;
   --color-brand-teal-600: #0891b2;
   --color-brand-teal-500: #06b6d4;
@@ -33,48 +31,56 @@
   --color-brand-teal-200: #a5f3fc;
   --color-brand-teal-100: #cffafe;
 
-  /* Accent: Golden yellow (sale badges) */
+  /* ── Accent: Gold (sale / highlight) ────────────────────────────────── */
+  --color-brand-gold-700: #b45309;
   --color-brand-gold-600: #d97706;
   --color-brand-gold-500: #f59e0b;
   --color-brand-gold-400: #fbbf24;
   --color-brand-gold-100: #fef3c7;
+  --color-brand-gold-50:  #fffbeb;
 
-  /* Accent: Green (in-stock, success) */
+  /* ── Accent: Green ───────────────────────────────────────────────────── */
+  --color-brand-green-700: #15803d;
   --color-brand-green-600: #16a34a;
   --color-brand-green-500: #22c55e;
   --color-brand-green-100: #dcfce7;
 
-  /* Surfaces — warm whites */
+  /* ── Surfaces ────────────────────────────────────────────────────────── */
   --color-surface-bg-0: #fff9f7;
   --color-surface-bg-1: #ffffff;
   --color-surface-bg-2: #ffffff;
-  --color-surface-bg-3: #fff0ec;
+  --color-surface-bg-3: #fff4f1;
   --color-surface-bg-4: #fdddd6;
 
-  /* Text */
-  --color-text-1: #1a0a05;
-  --color-text-2: #4a2010;
-  --color-text-3: #8a5240;
-  --color-text-inverse: #ffffff;
+  /* ── Text ────────────────────────────────────────────────────────────── */
+  --color-text-1:          #1a0a05;
+  --color-text-2:          #4a2010;
+  --color-text-3:          #8a5240;
+  --color-text-4:          #c4907e;
+  --color-text-inverse:    #ffffff;
   --color-text-on-primary: #ffffff;
 
-  /* Borders */
+  /* ── Borders ─────────────────────────────────────────────────────────── */
   --color-border-subtle: #f0d4cc;
-  --color-border-strong: #e8b8ac;
+  --color-border-strong: #e0b0a0;
+  --color-border-active: #ee4d2d;
 
-  /* Status */
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --color-status-success-700: #15803d;
   --color-status-success-600: #16a34a;
+  --color-status-success-200: #bbf7d0;
   --color-status-success-100: #dcfce7;
   --color-status-warning-600: #d97706;
   --color-status-warning-100: #fef3c7;
-  --color-status-danger-600: #dc2626;
-  --color-status-danger-100: #fee2e2;
-  --color-status-info-600: #0891b2;
-  --color-status-info-100: #cffafe;
-  --color-status-escrow-600: #7c3aed;
-  --color-status-escrow-100: #ede9fe;
+  --color-status-danger-700:  #b91c1c;
+  --color-status-danger-600:  #dc2626;
+  --color-status-danger-100:  #fee2e2;
+  --color-status-info-600:    #0891b2;
+  --color-status-info-100:    #cffafe;
+  --color-status-escrow-600:  #7c3aed;
+  --color-status-escrow-100:  #ede9fe;
 
-  /* Viz */
+  /* ── Viz ─────────────────────────────────────────────────────────────── */
   --color-viz-1: #ee4d2d;
   --color-viz-2: #06b6d4;
   --color-viz-3: #f59e0b;
@@ -83,68 +89,75 @@
   --color-viz-6: #ec4899;
 }
 
-* {
-  border-color: theme(--color-border-subtle);
-}
+/* ── Base reset ──────────────────────────────────────────────────────────── */
+* { border-color: theme(--color-border-subtle); }
 
-html,
-body {
+html, body {
   background: theme(--color-surface-bg-0);
   color: theme(--color-text-1);
 }
 
-a {
-  color: theme(--color-brand-primary-600);
-  transition: color 180ms ease;
-}
+a { color: theme(--color-brand-primary-600); transition: color 180ms ease; }
+a:hover { color: theme(--color-brand-primary-700); }
 
-a:hover {
-  color: theme(--color-brand-primary-700);
-}
-
+/* ── Focus ring ──────────────────────────────────────────────────────────── */
 .focus-ring {
-  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-bg-0;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-bg-0;
 }
 
-/* Shopee-style sale badge shimmer */
-.sale-shimmer {
-  background: linear-gradient(135deg, #ee4d2d 0%, #f59e0b 100%);
-}
-
-/* Primary CTA — Shopee orange */
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
 .btn-cta {
-  @apply text-white bg-brand-primary-600 hover:bg-brand-primary-700 active:bg-brand-primary-800;
+  @apply bg-brand-primary-600 text-white shadow-sm hover:bg-brand-primary-700 active:bg-brand-primary-800 transition-all duration-150 font-medium;
 }
-
-/* Secondary brand action */
 .btn-brand {
-  @apply text-white bg-brand-teal-600 hover:bg-brand-teal-700 active:bg-brand-teal-700;
+  @apply bg-brand-teal-600 text-white shadow-sm hover:bg-brand-teal-700 active:bg-brand-teal-700 transition-all duration-150 font-medium;
 }
-
 .btn-soft {
-  @apply text-text-1 bg-brand-primary-100 hover:bg-brand-primary-200;
+  @apply bg-brand-primary-100 text-brand-primary-700 hover:bg-brand-primary-200 transition-all duration-150 font-medium;
+}
+.btn-ghost {
+  @apply bg-transparent text-text-2 hover:bg-surface-bg-3 transition-all duration-150;
 }
 
+/* ── Surface utilities ───────────────────────────────────────────────────── */
 .panel-surface {
-  @apply border border-border-subtle bg-surface-bg-2 shadow-sm;
+  @apply border border-border-subtle bg-surface-bg-1 shadow-sm;
 }
-
-/* Product card hover lift */
-.product-card {
-  @apply transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-md;
-}
-
-/* Product card hover lift */
 .card-elevate {
   @apply border border-border-subtle bg-surface-bg-1 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md;
 }
 
-/* Bottom navigation bar */
+/* ── Product card ────────────────────────────────────────────────────────── */
+.product-card {
+  @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg;
+}
+
+/* ── Hero banner gradient ────────────────────────────────────────────────── */
+.hero-gradient {
+  background: linear-gradient(135deg, #ee4d2d 0%, #f26542 40%, #f59e0b 100%);
+}
+.hero-gradient-subtle {
+  background: linear-gradient(135deg, #fff0ec 0%, #fef3c7 100%);
+}
+
+/* ── Sale shimmer badge ──────────────────────────────────────────────────── */
+.sale-shimmer {
+  background: linear-gradient(135deg, #ee4d2d 0%, #f59e0b 100%);
+  background-size: 200% 200%;
+  animation: badge-shimmer 3s ease infinite;
+}
+@keyframes badge-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* ── Bottom navigation ───────────────────────────────────────────────────── */
 .bottom-nav {
   @apply fixed bottom-0 left-0 right-0 z-50 border-t border-border-subtle bg-surface-bg-1;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* ── Entrance animations ─────────────────────────────────────────────────── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -153,5 +166,83 @@ a:hover {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-.animate-fade-up { animation: fade-up  0.25s ease-out both; }
-.animate-fade-in { animation: fade-in  0.2s  ease-out both; }
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-fade-up   { animation: fade-up   0.25s ease-out both; }
+.animate-fade-in   { animation: fade-in   0.2s  ease-out both; }
+.animate-scale-in  { animation: scale-in  0.2s  ease-out both; }
+
+/* ── Step indicator ──────────────────────────────────────────────────────── */
+.step-active {
+  @apply border-brand-primary-600 bg-brand-primary-600 text-white;
+}
+.step-done {
+  @apply border-brand-primary-300 bg-brand-primary-100 text-brand-primary-700;
+}
+.step-future {
+  @apply border-border-strong bg-surface-bg-3 text-text-3;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TOAST — Frosted glass with animated shimmer beam
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Base glass container — overrides HeroUI's color-prop backgrounds */
+.uni-toast {
+  position: relative !important;
+  overflow: hidden !important;
+  background: rgba(255, 249, 247, 0.96) !important;
+  backdrop-filter: blur(16px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(200%) !important;
+  border: 1px solid rgba(240, 212, 204, 0.7) !important;
+  border-radius: 1rem !important;
+  box-shadow:
+    0 12px 40px -8px rgba(138, 82, 64, 0.14),
+    0 2px 8px -2px rgba(0, 0, 0, 0.07) !important;
+  min-width: 280px;
+}
+
+/* Moving shimmer beam across the top edge */
+.uni-toast::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(238, 77, 45, 0.7) 50%,
+    transparent 100%
+  );
+  animation: toast-beam 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes toast-beam {
+  0%   { left: -60%; }
+  100% { left: 160%; }
+}
+
+/* Colored left accent bar per variant */
+.uni-toast::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 1rem 0 0 1rem;
+  background: #ee4d2d; /* default = info/orange */
+  pointer-events: none;
+}
+.uni-toast-success::after { background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%); }
+.uni-toast-error::after   { background: linear-gradient(180deg, #f87171 0%, #dc2626 100%); }
+.uni-toast-info::after    { background: linear-gradient(180deg, #f8906e 0%, #ee4d2d 100%); }
+
+/* Subtle tinted gradient per variant */
+.uni-toast-success { background: linear-gradient(120deg, rgba(255,249,247,0.97) 0%, rgba(220,252,231,0.18) 100%) !important; }
+.uni-toast-error   { background: linear-gradient(120deg, rgba(255,249,247,0.97) 0%, rgba(254,226,226,0.18) 100%) !important; }
+.uni-toast-info    { background: linear-gradient(120deg, rgba(255,249,247,0.97) 0%, rgba(255,240,236,0.18) 100%) !important; }
