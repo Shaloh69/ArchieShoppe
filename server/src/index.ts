@@ -11,6 +11,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { runMigrations, runSeed, warmPythonServer } from './startup';
 import { initWebSocketServer } from './ws/wsServer';
 import { startHoldReleaseCron } from './cron/holdRelease';
+import { startSubscriptionExpiryCron } from './cron/subscriptionExpiry';
 
 import authRoutes from './routes/auth';
 import itemRoutes from './routes/items';
@@ -99,6 +100,7 @@ async function bootstrap() {
     await runSeed();
     await warmPythonServer(env.PYTHON_SERVER_URL);
     startHoldReleaseCron();
+    startSubscriptionExpiryCron();
 
     server.listen(env.PORT, () => {
       console.log(`[server] UniThrift API listening on port ${env.PORT}`);

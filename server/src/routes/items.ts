@@ -3,8 +3,29 @@ import { authenticate, AuthRequest } from '../middleware/auth';
 import { adminOnly } from '../middleware/adminOnly';
 import { upload, uploadToSupabase } from '../utils/upload';
 import * as itemService from '../services/itemService';
+import { sendCommandToEsp } from '../ws/espHandler';
 
 const router = Router();
+
+// Subscription plans with computed dailyRate — used by seller app listing form
+router.get('/plans', async (_req, res: Response) => {
+  const plans = await itemService.getSubscriptionPlansWithDailyRate();
+  res.json({ plans });
+});
+
+// Kiosk sell flow: seller enters their 6-char code to access their assigned slot.
+// No authentication required — the code IS the credential at the kiosk.
+router.post('/verify-seller-code', async (req, res: Response) => {
+  const { code } = req.body as { code?: string };
+  if (!code || typeof code !== 'string' || code.trim().length === 0) {
+    res.status(400).json({ message: 'code is required' });
+    return;
+  }
+  const item = await itemService.verifySellerCode(code.trim().toUpperCase());
+  // Unlock the physical slot so the seller can deposit their item
+  sendCommandToEsp('Kiosk-1', { type: 'UNLOCK_SLOT', slotId: item.slotId });
+  res.json({ item });
+});
 
 router.get('/', async (req, res: Response) => {
   const parsed = itemService.browseSchema.safeParse(req.query);

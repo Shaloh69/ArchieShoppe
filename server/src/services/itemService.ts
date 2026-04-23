@@ -3,6 +3,20 @@ import { prisma } from '../config/db';
 import { debitWallet } from './walletService';
 import { createAuditLog } from '../utils/audit';
 import { broadcastToAdmins } from '../ws/broadcaster';
+import { generatePersonalCode } from '../utils/codeGenerator';
+
+// 5 % service fee added on top of the seller's listed price — paid by the buyer.
+// Shown on all browse/item pages so buyers see the real checkout amount upfront.
+export const BUYER_FEE_RATE = 0.05;
+
+export function withDisplayPrice<T extends { price: { toNumber(): number } }>(item: T) {
+  const base = item.price.toNumber();
+  return {
+    ...item,
+    displayPrice: Math.ceil(base * (1 + BUYER_FEE_RATE) * 100) / 100,
+    serviceFee: Math.ceil(base * BUYER_FEE_RATE * 100) / 100,
+  };
+}
 
 export const createItemSchema = z.object({
   title: z.string().min(3).max(200),
@@ -55,7 +69,7 @@ export async function browseItems(query: z.infer<typeof browseSchema>) {
         ? { price: 'desc' as const }
         : { createdAt: 'desc' as const };
 
-  const [total, items] = await Promise.all([
+  const [total, raw] = await Promise.all([
     prisma.item.count({ where: where as never }),
     prisma.item.findMany({
       where: where as never,
@@ -69,7 +83,7 @@ export async function browseItems(query: z.infer<typeof browseSchema>) {
     }),
   ]);
 
-  return { total, page, limit, items };
+  return { total, page, limit, items: raw.map(withDisplayPrice) };
 }
 
 export async function getItemById(itemId: string) {
@@ -82,7 +96,7 @@ export async function getItemById(itemId: string) {
     },
   });
   if (!item) throw Object.assign(new Error('Item not found'), { status: 404 });
-  return item;
+  return withDisplayPrice(item);
 }
 
 export async function createItem(
@@ -95,12 +109,21 @@ export async function createItem(
   });
   if (!plan) throw Object.assign(new Error('Subscription plan not found'), { status: 404 });
 
-  // Find an available locker slot
   const slot = await prisma.lockerSlot.findFirst({ where: { status: 'EMPTY', currentItem: null } });
   if (!slot) throw Object.assign(new Error('No locker slots available'), { status: 503 });
 
   const planPrice = plan.price.toNumber();
-  await debitWallet(sellerId, planPrice, 'SLOT_RENTAL', undefined, `Slot rental: ${plan.name}`);
+  await debitWallet(sellerId, planPrice, 'SLOT_RENTAL', undefined, `Slot rental: ${plan.name} (${plan.durationDays}d @ ₱${(planPrice / plan.durationDays).toFixed(2)}/day)`);
+
+  // Generate unique seller kiosk code — shown in the app, entered at the kiosk to unlock the slot
+  let sellerCode: string;
+  let attempts = 0;
+  do {
+    sellerCode = generatePersonalCode();
+    const exists = await prisma.item.findUnique({ where: { sellerCode } });
+    if (!exists) break;
+    attempts++;
+  } while (attempts < 10);
 
   const subscriptionEndsAt = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
 
@@ -112,6 +135,7 @@ export async function createItem(
       price: data.price,
       description: data.description,
       imageUrl,
+      sellerCode: sellerCode!,
       sellerId,
       status: 'DRAFT',
       slotId: slot.slotId,
@@ -128,8 +152,42 @@ export async function createItem(
   await createAuditLog('ORDER', sellerId, item.id, 'ITEM_CREATED', {
     slotId: slot.slotId,
     plan: plan.planKey,
+    sellerCode: sellerCode!,
   });
   broadcastToAdmins({ type: 'ITEM_UPDATE', itemId: item.id, status: 'DRAFT' });
+
+  return withDisplayPrice(item);
+}
+
+/**
+ * Validate a seller's kiosk code and return the item + slot info.
+ * The caller (route handler) is responsible for triggering the slot unlock via WebSocket.
+ * Only works for ACTIVE items — admin must have approved the listing first.
+ */
+export async function verifySellerCode(code: string) {
+  const item = await prisma.item.findFirst({
+    where: { sellerCode: code, status: 'ACTIVE' },
+    include: {
+      seller: { select: { id: true, fullName: true } },
+      slot: { select: { slotId: true, status: true } },
+      subscriptionPlan: { select: { name: true, durationDays: true, price: true } },
+    },
+  });
+
+  if (!item) {
+    throw Object.assign(
+      new Error('Invalid seller code or item not yet approved by admin'),
+      { status: 404 },
+    );
+  }
+  if (!item.slotId) {
+    throw Object.assign(new Error('No locker slot assigned to this item'), { status: 400 });
+  }
+
+  await createAuditLog('LOCKER', item.sellerId, item.slotId, 'SELLER_KIOSK_ACCESS', {
+    itemId: item.id,
+    sellerCode: code,
+  });
 
   return item;
 }
@@ -174,12 +232,29 @@ export async function getMyListings(sellerId: string, page = 1, limit = 20) {
       take: limit,
       include: {
         slot: { select: { slotId: true, status: true } },
-        subscriptionPlan: { select: { name: true, durationDays: true } },
+        subscriptionPlan: { select: { name: true, durationDays: true, price: true } },
         orders: { select: { id: true, status: true }, orderBy: { createdAt: 'desc' }, take: 1 },
       },
     }),
   ]);
-  return { total, page, limit, items };
+  // Include sellerCode so the mobile app can show it to the seller
+  return {
+    total,
+    page,
+    limit,
+    items: items.map((item) => ({
+      ...withDisplayPrice(item),
+      sellerCode: item.sellerCode,
+      subscriptionPlan: item.subscriptionPlan
+        ? {
+            ...item.subscriptionPlan,
+            dailyRate: Math.ceil(
+              (item.subscriptionPlan.price.toNumber() / item.subscriptionPlan.durationDays) * 100,
+            ) / 100,
+          }
+        : null,
+    })),
+  };
 }
 
 export async function getAllItems(page = 1, limit = 20, status?: string) {
@@ -198,5 +273,13 @@ export async function getAllItems(page = 1, limit = 20, status?: string) {
       },
     }),
   ]);
-  return { total, page, limit, items };
+  return { total, page, limit, items: items.map(withDisplayPrice) };
+}
+
+export async function getSubscriptionPlansWithDailyRate() {
+  const plans = await prisma.lockerSubscriptionPlan.findMany({ orderBy: { durationDays: 'asc' } });
+  return plans.map((p) => ({
+    ...p,
+    dailyRate: Math.ceil((p.price.toNumber() / p.durationDays) * 100) / 100,
+  }));
 }

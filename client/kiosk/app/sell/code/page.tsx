@@ -1,11 +1,12 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
+import { Spinner } from "@heroui/spinner";
 
+import { itemsApi } from "@/lib/api-client";
 import { notifyError, notifySuccess } from "@/lib/unithrift-toast";
 
 const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
@@ -13,71 +14,90 @@ const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 export default function KioskSellCodePage() {
   const router = useRouter();
   const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const appendDigit = (digit: string) => {
     setCode((prev) => (prev.length >= 6 ? prev : `${prev}${digit}`));
   };
 
-  const verifyCode = () => {
+  const verifyCode = async () => {
     if (code.length !== 6) {
       notifyError({
         title: "Invalid code",
-        description: "Seller code must be 6 digits.",
+        description: "Seller code must be 6 characters.",
       });
       return;
     }
 
-    notifySuccess({
-      title: "Code verified",
-      description: "Proceeding to assigned slot.",
-    });
-    router.push(`/sell/slot?code=${code}&slot=S-05&item=Linen%20Polo`);
+    setLoading(true);
+    try {
+      const res = await itemsApi.verifySellerCode(code);
+      notifySuccess({
+        title: "Code accepted",
+        description: `Slot ${res.item.slotId} is now unlocked. Place your item inside.`,
+      });
+      router.push(
+        `/sell/slot?code=${code}&slot=${res.item.slotId}&item=${encodeURIComponent(res.item.title)}&itemId=${res.item.id}`,
+      );
+    } catch (e) {
+      notifyError({
+        title: "Invalid code",
+        description: (e as Error).message ?? "Code not found or item not yet approved.",
+      });
+      setCode("");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-3xl items-center">
       <Card className="w-full border border-border-subtle bg-surface-bg-2">
         <CardBody className="space-y-5 p-8">
-          <h1 className="text-3xl font-semibold text-text-1">
-            Enter Seller Code
-          </h1>
-          <Input
-            classNames={{
-              input: "text-center text-4xl tracking-[0.6em] text-text-1",
-              inputWrapper: "h-20 bg-surface-bg-3 border border-border-subtle",
-            }}
-            maxLength={6}
-            value={code}
-            onValueChange={(value) =>
-              setCode(value.replace(/\D/g, "").slice(0, 6))
-            }
-          />
+          <h1 className="text-3xl font-semibold text-text-1">Enter Seller Code</h1>
+          <p className="text-sm text-text-3">
+            Find your 6-character code in the UniThrift app under My Listings.
+          </p>
+
+          <div className="flex h-20 items-center justify-center rounded-xl border border-border-subtle bg-surface-bg-3 text-4xl font-bold tracking-[0.6em] text-text-1">
+            {code.padEnd(6, "·")}
+          </div>
+
           <div className="grid grid-cols-3 gap-3">
             {keypad.map((digit) => (
               <Button
                 key={digit}
                 className="h-16 text-2xl btn-cta"
+                isDisabled={loading}
                 onPress={() => appendDigit(digit)}
               >
                 {digit}
               </Button>
             ))}
           </div>
+
           <div className="grid gap-3 md:grid-cols-3">
             <Button
               className="h-14 text-lg bg-surface-bg-3 text-text-1 hover:bg-surface-bg-1"
+              isDisabled={loading}
               onPress={() => setCode((prev) => prev.slice(0, -1))}
             >
-              Backspace
+              ⌫ Back
             </Button>
             <Button
               className="h-14 text-lg bg-surface-bg-3 text-text-1 hover:bg-surface-bg-1"
+              isDisabled={loading}
               onPress={() => router.push("/welcome")}
             >
               Cancel
             </Button>
-            <Button className="h-14 text-lg btn-cta" onPress={verifyCode}>
-              Verify
+            <Button
+              className="h-14 text-lg btn-cta"
+              isDisabled={code.length !== 6 || loading}
+              isLoading={loading}
+              onPress={verifyCode}
+            >
+              {loading ? <Spinner size="sm" /> : "Verify"}
             </Button>
           </div>
         </CardBody>

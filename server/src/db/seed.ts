@@ -13,12 +13,14 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
   }
 
   console.log('[seed] Seeding subscription plans...');
+  // Upfront locker rental fee for the chosen duration.
+  // dailyRate = price / durationDays is computed on the API; not stored separately.
   const plans = [
-    { planKey: 'WEEKLY_1', name: '1 Week', durationDays: 7, price: 149, highlight: false },
-    { planKey: 'WEEKLY_2', name: '2 Weeks', durationDays: 14, price: 249, highlight: false },
-    { planKey: 'MONTHLY_1', name: '1 Month', durationDays: 30, price: 399, highlight: true },
-    { planKey: 'MONTHLY_2', name: '2 Months', durationDays: 60, price: 699, highlight: false },
-    { planKey: 'MONTHLY_3', name: '3 Months', durationDays: 90, price: 999, highlight: false },
+    { planKey: 'DAILY_1',   name: '1 Day',   durationDays: 1,  price: 29,  highlight: false },
+    { planKey: 'DAILY_3',   name: '3 Days',  durationDays: 3,  price: 75,  highlight: false },
+    { planKey: 'WEEKLY_1',  name: '1 Week',  durationDays: 7,  price: 149, highlight: true  },
+    { planKey: 'WEEKLY_2',  name: '2 Weeks', durationDays: 14, price: 249, highlight: false },
+    { planKey: 'MONTHLY_1', name: '1 Month', durationDays: 30, price: 399, highlight: false },
   ];
   for (const p of plans) {
     await prisma.lockerSubscriptionPlan.upsert({

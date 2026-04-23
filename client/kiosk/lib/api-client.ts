@@ -116,6 +116,17 @@ export const itemsApi = {
   getById: (id: string) =>
     apiFetch<{ item: ApiItem }>(`/api/items/${id}`),
 
+  // Kiosk sell flow — no auth required
+  verifySellerCode: (code: string) =>
+    apiFetch<{ item: ApiItem }>("/api/items/verify-seller-code", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+      skipAuth: true,
+    }),
+
+  subscriptionPlans: () =>
+    apiFetch<{ plans: ApiLockerPlan[] }>("/api/items/plans", { skipAuth: true }),
+
   myListings: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
     return apiFetch<{ total: number; items: ApiItem[] }>(`/api/items/my/listings${qs}`);
@@ -283,8 +294,11 @@ export interface ApiItem {
   category: string;
   condition: string;
   price: string;
+  displayPrice: number;   // price + 5% service fee — what the buyer pays
+  serviceFee: number;     // the 5% service fee amount
   description: string;
   imageUrl?: string;
+  sellerCode?: string;    // shown in My Listings so seller can deposit at kiosk
   sellerId: string;
   seller?: { id: string; fullName: string };
   status: string;
@@ -354,6 +368,7 @@ export interface ApiLockerPlan {
   name: string;
   durationDays: number;
   price: string;
+  dailyRate?: number;   // price / durationDays — computed by the API
   highlight: boolean;
 }
 

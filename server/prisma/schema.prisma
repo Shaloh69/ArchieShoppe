@@ -156,6 +156,7 @@ model Item {
   description        String     @db.Text
   imageUrl           String?
   extractedFeatures  Json?
+  sellerCode         String?  @unique  // 6-char code used at kiosk to access the assigned slot
   sellerId           String
   seller             User       @relation(fields: [sellerId], references: [id])
   status             ItemStatus @default(DRAFT)
