@@ -6,8 +6,6 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
-import path from 'path';
-
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 import { runMigrations, runSeed, warmPythonServer } from './startup';
@@ -28,9 +26,16 @@ const app = express();
 
 // Security
 app.use(helmet());
+
+// CLIENT_URL is comma-separated — split into array for multi-app CORS support
+const allowedOrigins = env.CLIENT_URL.split(',').map((o) => o.trim()).filter(Boolean);
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: (origin, cb) => {
+      // Allow server-to-server requests (no origin) and listed origins
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error(`CORS: origin ${origin} not allowed`));
+    },
     credentials: true,
   }),
 );
@@ -61,9 +66,6 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/api/auth/', authLimiter);
-
-// Static uploads
-app.use('/uploads', express.static(path.resolve(env.UPLOAD_DIR)));
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -1,0 +1,88 @@
+## render.yaml — UniThrift monorepo deployment
+## Commit this file and connect the repo to Render → "New Blueprint Instance"
+## to auto-create all 4 services at once.
+
+services:
+  # ─── 1. Backend API ──────────────────────────────────────────────────────────
+  - type: web
+    name: unithrift-api
+    runtime: node
+    region: oregon
+    rootDir: server
+    buildCommand: npm install && npm run build && npx prisma generate
+    startCommand: node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false           # paste in Render dashboard
+      - key: ACCESS_TOKEN_SECRET
+        generateValue: true
+      - key: REFRESH_TOKEN_SECRET
+        generateValue: true
+      - key: PAYMONGO_SECRET_KEY
+        sync: false
+      - key: PAYMONGO_WEBHOOK_SECRET
+        sync: false
+      - key: PYTHON_SERVER_URL
+        value: https://unithrift-classify.onrender.com
+      - key: PYTHON_API_KEY
+        sync: false
+      - key: CLIENT_URL
+        value: https://unithrift-admin.onrender.com,https://unithrift-shop.onrender.com,https://unithrift-kiosk.onrender.com
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: MAX_FILE_SIZE_MB
+        value: 10
+      - key: SUPABASE_URL
+        value: https://tesbyqbnqncwcflchqxo.supabase.co
+      - key: SUPABASE_SERVICE_KEY
+        sync: false           # paste sb_secret_... in Render dashboard
+      - key: SUPABASE_BUCKET
+        value: unithriftMedia
+
+  # ─── 2. Admin Dashboard ──────────────────────────────────────────────────────
+  - type: web
+    name: unithrift-admin
+    runtime: node
+    region: oregon
+    rootDir: client/admin
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://unithrift-api.onrender.com
+      - key: PORT
+        value: 10000
+
+  # ─── 3. Shop (Buyer/Seller) ───────────────────────────────────────────────────
+  - type: web
+    name: unithrift-shop
+    runtime: node
+    region: oregon
+    rootDir: client/shop
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://unithrift-api.onrender.com
+      - key: PORT
+        value: 10000
+
+  # ─── 4. Kiosk UI ─────────────────────────────────────────────────────────────
+  - type: web
+    name: unithrift-kiosk
+    runtime: node
+    region: oregon
+    rootDir: client/kiosk
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://unithrift-api.onrender.com
+      - key: PORT
+        value: 10000

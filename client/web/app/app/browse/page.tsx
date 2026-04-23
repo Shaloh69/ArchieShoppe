@@ -161,7 +161,7 @@ export default function BrowsePage() {
                     <img
                       alt={item.title}
                       className="aspect-[16/10] w-full rounded-lg object-cover"
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
+                      src={item.imageUrl?.startsWith("http") ? item.imageUrl : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
                     />
                   ) : (
                     <div className="aspect-[16/10] rounded-lg bg-gradient-to-br from-brand-primary-900 to-brand-primary-700" />

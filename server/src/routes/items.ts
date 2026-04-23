@@ -1,10 +1,8 @@
 import { Router, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { adminOnly } from '../middleware/adminOnly';
-import { upload } from '../utils/upload';
+import { upload, uploadToSupabase } from '../utils/upload';
 import * as itemService from '../services/itemService';
-import { env } from '../config/env';
-import path from 'path';
 
 const router = Router();
 
@@ -55,7 +53,7 @@ router.post('/', authenticate, upload.single('image'), async (req: AuthRequest, 
 
   let imageUrl: string | undefined;
   if (req.file) {
-    imageUrl = `/uploads/${path.basename(req.file.path)}`;
+    imageUrl = await uploadToSupabase(req.file);
   }
 
   const item = await itemService.createItem(req.user!.userId, parsed.data, imageUrl);
@@ -71,11 +69,6 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   const isAdmin = req.user!.role === 'ADMIN';
   const item = await itemService.removeItem(req.params.id, req.user!.userId, isAdmin);
   res.json({ item });
-});
-
-// Serve uploaded images
-router.use('/uploads', (req, res) => {
-  res.sendFile(path.join(env.UPLOAD_DIR, req.path));
 });
 
 export default router;

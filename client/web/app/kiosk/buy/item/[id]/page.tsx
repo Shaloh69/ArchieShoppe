@@ -70,7 +70,7 @@ export default function KioskBuyItemPage() {
             <img
               alt={item.title}
               className="aspect-[4/3] w-full rounded-xl object-cover"
-              src={`${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
+              src={item.imageUrl?.startsWith("http") ? item.imageUrl : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
             />
           ) : (
             <div className="aspect-[4/3] rounded-xl bg-gradient-to-br from-brand-primary-900 to-brand-primary-700" />

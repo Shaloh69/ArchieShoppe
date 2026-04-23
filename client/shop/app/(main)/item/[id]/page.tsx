@@ -98,7 +98,7 @@ export default function ItemDetailPage() {
           <img
             alt={item.title}
             className="aspect-square w-full object-cover"
-            src={`${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
+            src={item.imageUrl?.startsWith("http") ? item.imageUrl : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
           />
         ) : (
           <div className="flex aspect-square w-full items-center justify-center bg-gradient-to-br from-brand-primary-200 to-brand-teal-100 text-7xl">
