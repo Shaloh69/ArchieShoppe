@@ -33,6 +33,11 @@
 // ─── Device ──────────────────────────────────────────────────────────────────
 #define DEVICE_ID       "Kiosk-1"
 
+// ─── Status LED ───────────────────────────────────────────────────────────────
+// GPIO 2 is the built-in blue LED on most ESP32 devkits (active-HIGH).
+// Change to your board's LED pin if different.
+#define LED_PIN         2
+
 // ─── Relay GPIO pins (active-LOW, IN1-IN6 on a 6-channel relay module) ───────
 // Each relay controls one locker slot solenoid/motor lock
 #define RELAY_S01  4

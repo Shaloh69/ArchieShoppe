@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <ArduinoWebsockets.h>
 #include "config.h"
+#include "led_status.h"
 
 using namespace websockets;
 
@@ -19,9 +20,11 @@ inline void wsInit() {
   wsClient.onEvent([](WebsocketsEvent event, String data) {
     if (event == WebsocketsEvent::ConnectionOpened) {
       wsConnected = true;
+      ledSetState(LED_BLINK_2);  // WiFi + server connected
       Serial.println("[ws] Connected to server");
     } else if (event == WebsocketsEvent::ConnectionClosed) {
       wsConnected = false;
+      ledSetState(LED_SOLID_ON); // lost server — solid on
       Serial.println("[ws] Disconnected");
     } else if (event == WebsocketsEvent::GotPing) {
       wsClient.pong();
@@ -40,7 +43,10 @@ inline bool wsConnect() {
 }
 
 inline void wsSend(const String& json) {
-  if (wsConnected) wsClient.send(json);
+  if (wsConnected) {
+    ledTriggerActivity(); // 3-blink burst on every outbound message
+    wsClient.send(json);
+  }
 }
 
 inline void wsPoll() {

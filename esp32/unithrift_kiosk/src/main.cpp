@@ -30,6 +30,7 @@
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include "config.h"
+#include "led_status.h"
 #include "relay_control.h"
 #include "door_sensor.h"
 #include "ws_client.h"
@@ -137,6 +138,8 @@ void onWsMessage(websockets::WebsocketsMessage msg) {
 
   const char* type = doc["type"] | "";
 
+  ledTriggerActivity(); // 3-blink burst on every inbound command
+
   if (strcmp(type, "UNLOCK_SLOT") == 0) {
     String slotId = doc["slotId"] | "";
     Serial.printf("[cmd] UNLOCK_SLOT %s\n", slotId.c_str());
@@ -161,6 +164,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n[boot] UniThrift Kiosk starting...");
 
+  ledInit();        // solid on — no WiFi yet
   relayInit();
   doorSensorInit();
 
@@ -180,6 +184,8 @@ void setup() {
 
 // ─── Loop ─────────────────────────────────────────────────────────────────────
 void loop() {
+  ledUpdate(); // advance LED state machine — must be first
+
   // Keep WebSocket alive
   if (wsConnected) {
     wsPoll();
