@@ -250,6 +250,24 @@ export const usersApi = {
     }),
 };
 
+// ─── Config (admin) ───────────────────────────────────────────────────────────
+export const configApi = {
+  getPlatformFee: () =>
+    apiFetch<{ feePct: number }>("/api/config/platform-fee"),
+
+  setPlatformFee: (feePct: number) =>
+    apiFetch<{ feePct: number }>("/api/config/platform-fee", {
+      method: "PUT",
+      body: JSON.stringify({ feePct }),
+    }),
+
+  updateSubscriptionPlan: (id: string, data: { price?: number; name?: string }) =>
+    apiFetch<{ plan: ApiLockerPlan }>(`/api/config/subscription-plans/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+};
+
 // ─── Reports (admin) ──────────────────────────────────────────────────────────
 export const reportsApi = {
   overview: () =>

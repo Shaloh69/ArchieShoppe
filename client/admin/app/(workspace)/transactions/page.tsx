@@ -127,7 +127,7 @@ export default function AdminTransactionsPage() {
             classNames={{
               base: "border border-border-subtle rounded-xl bg-surface-bg-2 min-w-[1080px]",
               th: "bg-surface-bg-3 text-text-2",
-              tr: "border-b border-border-subtle hover:bg-[#11203A]",
+              tr: "border-b border-border-subtle hover:bg-brand-primary-50",
               td: "text-text-2",
             }}
           >

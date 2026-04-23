@@ -134,8 +134,24 @@ a:hover {
   @apply transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-md;
 }
 
+/* Product card hover lift */
+.card-elevate {
+  @apply border border-border-subtle bg-surface-bg-1 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md;
+}
+
 /* Bottom navigation bar */
 .bottom-nav {
   @apply fixed bottom-0 left-0 right-0 z-50 border-t border-border-subtle bg-surface-bg-1;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-up { animation: fade-up  0.25s ease-out both; }
+.animate-fade-in { animation: fade-in  0.2s  ease-out both; }

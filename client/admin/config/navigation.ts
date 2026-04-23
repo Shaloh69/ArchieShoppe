@@ -9,4 +9,5 @@ export const adminNav: NavItem[] = [
   { label: "Users", shortLabel: "Users", href: "/users", group: "operations" },
   { label: "Reports", shortLabel: "Reports", href: "/reports", group: "operations" },
   { label: "Audit", shortLabel: "Audit", href: "/audit", group: "governance" },
+  { label: "Settings", shortLabel: "Settings", href: "/settings", group: "governance" },
 ];
