@@ -36,12 +36,10 @@ export async function uploadToSupabase(file: Express.Multer.File): Promise<strin
   const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
   const name = `items/${crypto.randomBytes(12).toString('hex')}${ext}`;
 
-  const { error } = await supabase.storage
-    .from(env.SUPABASE_BUCKET)
-    .upload(name, file.buffer, {
-      contentType: file.mimetype,
-      upsert: false,
-    });
+  const { error } = await supabase.storage.from(env.SUPABASE_BUCKET).upload(name, file.buffer, {
+    contentType: file.mimetype,
+    upsert: false,
+  });
 
   if (error) throw new Error(`Supabase upload failed: ${error.message}`);
 

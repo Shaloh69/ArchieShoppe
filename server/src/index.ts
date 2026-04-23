@@ -28,7 +28,9 @@ const app = express();
 app.use(helmet());
 
 // CLIENT_URL is comma-separated — split into array for multi-app CORS support
-const allowedOrigins = env.CLIENT_URL.split(',').map((o) => o.trim()).filter(Boolean);
+const allowedOrigins = env.CLIENT_URL.split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
 app.use(
   cors({
     origin: (origin, cb) => {
