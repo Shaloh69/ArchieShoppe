@@ -4,15 +4,15 @@ import { prisma } from './config/db';
 import { seedDatabase } from './db/seed';
 
 export async function runMigrations(): Promise<void> {
-  console.log('[startup] Running prisma migrate deploy...');
+  console.log('[startup] Syncing database schema (prisma db push)...');
   try {
-    execSync('npx prisma migrate deploy', {
+    execSync('npx prisma db push --accept-data-loss', {
       stdio: 'inherit',
       cwd: path.resolve(__dirname, '../'),
     });
-    console.log('[startup] Migrations applied.');
+    console.log('[startup] Schema synced.');
   } catch (err) {
-    console.error('[startup] Migration failed:', err);
+    console.error('[startup] Schema sync failed:', err);
     throw err;
   }
 }
