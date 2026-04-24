@@ -28,6 +28,9 @@ import reviewRoutes from './routes/reviews';
 
 const app = express();
 
+// Trust Render's reverse proxy so rate-limit and IP-based logic work correctly
+app.set('trust proxy', 1);
+
 // Security
 app.use(helmet());
 

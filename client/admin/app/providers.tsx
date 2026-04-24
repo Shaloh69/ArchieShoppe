@@ -33,17 +33,6 @@ export function Providers({ children, themeProps }: ProvidersProps) {
           <ToastProvider
             maxVisibleToasts={4}
             placement="top-right"
-            toastProps={{
-              variant: "flat",
-              shouldShowTimeoutProgress: true,
-              timeout: 4000,
-              motionProps: {
-                initial: { opacity: 0, y: -14, scale: 0.94 },
-                animate: { opacity: 1, y: 0,   scale: 1    },
-                exit:    { opacity: 0, y: -10,  scale: 0.96 },
-                transition: { type: "spring", stiffness: 420, damping: 32 },
-              },
-            }}
           />
         </AuthProvider>
       </NextThemesProvider>
