@@ -5,6 +5,7 @@ import { prisma } from '../config/db';
 import { env } from '../config/env';
 import { creditWallet } from './walletService';
 import { createAuditLog } from '../utils/audit';
+import { log } from '../utils/logger';
 
 const PAYMONGO_BASE = 'https://api.paymongo.com/v1';
 
@@ -127,8 +128,9 @@ function verifyPaymongoSignature(rawBody: Buffer, signatureHeader: string): void
   );
 
   const timestamp = parts['t'];
-  // Use live hash in production, test hash otherwise
-  const hash = env.NODE_ENV === 'production' ? parts['li'] : (parts['li'] ?? parts['te']);
+  // PayMongo always sends both te (test) and li (live) hashes.
+  // Validate against live hash in production, test hash everywhere else.
+  const hash = env.NODE_ENV === 'production' ? parts['li'] : parts['te'];
 
   if (!timestamp || !hash) {
     throw Object.assign(new Error('Malformed PayMongo signature header'), { status: 400 });
@@ -157,6 +159,10 @@ export async function handleWebhook(rawBody: Buffer, signatureHeader: string) {
 
   if (eventType === 'source.chargeable') {
     return handleSourceChargeable(event);
+  }
+
+  if (eventType === 'qrph.expired') {
+    return handleQrPhExpired(event);
   }
 
   return { received: true };
@@ -229,7 +235,7 @@ async function handleSourceChargeable(event: Record<string, unknown>) {
     });
   } catch (err) {
     // Payment may have already been created on a previous webhook retry — not fatal
-    console.error('[webhook] Failed to create payment from source:', err);
+    log.sys.warn(`QR Ph payment creation failed for source ${sourceId} — wallet credit will still proceed`);
   }
 
   await creditWallet(
@@ -245,6 +251,20 @@ async function handleSourceChargeable(event: Record<string, unknown>) {
     method: 'qrph',
   });
 
+  return { received: true };
+}
+
+async function handleQrPhExpired(event: Record<string, unknown>) {
+  type SourceEvent = { data: { attributes: { data: { id: string } } } };
+  const sourceId = (event as SourceEvent).data?.attributes?.data?.id;
+  if (!sourceId) return { received: true };
+
+  await prisma.paymongoPayment.updateMany({
+    where: { checkoutSessionId: sourceId, status: 'pending' },
+    data: { status: 'expired' },
+  });
+
+  log.sys.warn(`QR Ph source expired: ${sourceId}`);
   return { received: true };
 }
 
