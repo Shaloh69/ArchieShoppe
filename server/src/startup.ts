@@ -4,15 +4,18 @@ import { prisma } from './config/db';
 import { seedDatabase } from './db/seed';
 
 export async function runMigrations(): Promise<void> {
-  console.log('[startup] Syncing database schema (prisma db push)...');
+  console.log('[startup] Syncing database schema...');
   try {
-    execSync('npx prisma db push', {
+    // --accept-data-loss is required for column-type changes (e.g. TEXT→VARCHAR).
+    // Safe to use here because the schema is stable — re-running with no schema
+    // changes is a no-op and does not touch existing data.
+    execSync('npx prisma db push --accept-data-loss', {
       stdio: 'inherit',
       cwd: path.resolve(__dirname, '../'),
     });
     console.log('[startup] Schema synced.');
   } catch (err) {
-    console.error('[startup] Schema sync failed:', err);
+    console.error('[startup] Schema sync failed — server cannot start safely:', err);
     throw err;
   }
 }

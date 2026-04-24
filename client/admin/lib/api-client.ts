@@ -75,19 +75,27 @@ async function apiFetch<T>(
   return res.json() as Promise<T>;
 }
 
+let _refreshPromise: Promise<boolean> | null = null;
+
 async function silentRefresh(): Promise<boolean> {
-  try {
-    const res = await fetch(`${BASE}/api/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    _accessToken = data.accessToken;
-    return true;
-  } catch {
-    return false;
-  }
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${BASE}/api/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      _accessToken = data.accessToken;
+      return true;
+    } catch {
+      return false;
+    } finally {
+      _refreshPromise = null;
+    }
+  })();
+  return _refreshPromise;
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -311,6 +319,28 @@ export const configApi = {
     }),
 };
 
+// ─── Cashouts (admin) ─────────────────────────────────────────────────────────
+export const cashoutsApi = {
+  adminAll: (params?: Record<string, string>) => {
+    const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+    return apiFetch<{ total: number; requests: ApiCashoutRequest[] }>(
+      `/api/cashouts/admin/all${qs}`,
+    );
+  },
+
+  approve: (id: string, adminNotes?: string) =>
+    apiFetch<{ request: ApiCashoutRequest }>(`/api/cashouts/${id}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ adminNotes }),
+    }),
+
+  deny: (id: string, adminNotes?: string) =>
+    apiFetch<{ request: ApiCashoutRequest }>(`/api/cashouts/${id}/deny`, {
+      method: "POST",
+      body: JSON.stringify({ adminNotes }),
+    }),
+};
+
 // ─── Reports (admin) ──────────────────────────────────────────────────────────
 export const reportsApi = {
   overview: () => apiFetch<{ overview: ApiOverview }>("/api/reports/overview"),
@@ -513,4 +543,18 @@ export interface ApiAuditLog {
   action: string;
   metadata?: unknown;
   createdAt: string;
+}
+
+export interface ApiCashoutRequest {
+  id: string;
+  userId: string;
+  user?: { id: string; fullName: string; email: string };
+  amount: string;
+  method: "GCASH" | "MAYA" | "BANK";
+  accountNumber: string;
+  accountName: string;
+  status: "PENDING" | "PROCESSING" | "PAID" | "DENIED";
+  adminNotes?: string;
+  requestedAt: string;
+  processedAt?: string;
 }

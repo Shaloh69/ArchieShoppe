@@ -49,6 +49,21 @@ enum WalletTxnType {
   COMMISSION
   SLOT_RENTAL
   SELLER_PAYOUT
+  CASHOUT
+  CASHOUT_RETURN
+}
+
+enum CashoutMethod {
+  GCASH
+  MAYA
+  BANK
+}
+
+enum CashoutStatus {
+  PENDING
+  PROCESSING
+  PAID
+  DENIED
 }
 
 enum RefundStatus {
@@ -103,6 +118,7 @@ model User {
   buyerRefunds     Refund[]            @relation("BuyerRefunds")
   sellerRefunds    Refund[]            @relation("SellerRefunds")
   payments         PaymongoPayment[]
+  cashoutRequests  CashoutRequest[]
   refreshTokens    RefreshToken[]
   wishlist         Wishlist[]
   reviewsGiven     Review[]            @relation("ReviewsGiven")
@@ -287,17 +303,36 @@ model LockerEvent {
 }
 
 model PaymongoPayment {
-  id               String   @id @default(cuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id])
-  checkoutSessionId String  @unique
-  amount           Decimal  @db.Decimal(10, 2)
-  status           String   @default("pending")
-  createdAt        DateTime @default(now())
-  completedAt      DateTime?
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  checkoutSessionId String   @unique
+  amount            Decimal  @db.Decimal(10, 2)
+  status            String   @default("pending")
+  paymentMethod     String   @default("checkout") // "checkout" | "qrph"
+  createdAt         DateTime @default(now())
+  completedAt       DateTime?
 
   @@index([userId])
   @@map("paymongo_payments")
+}
+
+model CashoutRequest {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  amount        Decimal       @db.Decimal(10, 2)
+  method        CashoutMethod
+  accountNumber String
+  accountName   String
+  status        CashoutStatus @default(PENDING)
+  adminNotes    String?       @db.Text
+  requestedAt   DateTime      @default(now())
+  processedAt   DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@map("cashout_requests")
 }
 
 model PlatformConfig {

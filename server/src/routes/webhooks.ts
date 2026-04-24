@@ -11,8 +11,13 @@ router.post('/paymongo', async (req: Request, res: Response) => {
     return;
   }
   const rawBody = req.body as Buffer;
-  const result = await paymongoService.handleWebhook(rawBody, signature);
-  res.json(result);
+  try {
+    const result = await paymongoService.handleWebhook(rawBody, signature);
+    res.json(result);
+  } catch (err) {
+    const error = err as Error & { status?: number };
+    res.status(error.status ?? 400).json({ message: error.message });
+  }
 });
 
 export default router;

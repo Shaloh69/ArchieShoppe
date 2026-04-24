@@ -154,6 +154,26 @@ export const walletApi = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+
+  createQrPh: (amount: number) =>
+    apiFetch<{ sourceId: string; qrCode: string | null; checkoutUrl: string | null; amount: number; expiresAt: string | null }>("/api/wallet/qrph", {
+      method: "POST",
+      body: JSON.stringify({ amount }),
+    }),
+
+  checkQrPhStatus: (sourceId: string) =>
+    apiFetch<{ status: string; amount: number }>(`/api/wallet/qrph/${sourceId}/status`),
+
+  requestCashout: (body: { amount: number; method: string; accountNumber: string; accountName: string }) =>
+    apiFetch<{ request: ApiCashoutRequest }>("/api/wallet/cashout", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  myCashouts: (params?: Record<string, string>) => {
+    const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+    return apiFetch<{ total: number; requests: ApiCashoutRequest[] }>(`/api/wallet/cashouts${qs}`);
+  },
 };
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
@@ -416,4 +436,17 @@ export interface ApiAuditLog {
   action: string;
   metadata?: unknown;
   createdAt: string;
+}
+
+export interface ApiCashoutRequest {
+  id: string;
+  userId: string;
+  amount: string;
+  method: "GCASH" | "MAYA" | "BANK";
+  accountNumber: string;
+  accountName: string;
+  status: "PENDING" | "PROCESSING" | "PAID" | "DENIED";
+  adminNotes?: string;
+  requestedAt: string;
+  processedAt?: string;
 }

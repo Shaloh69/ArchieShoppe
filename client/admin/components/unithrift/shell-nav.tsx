@@ -41,6 +41,7 @@ const NAV_ICON: Record<string, ReactNode> = {
   "/overview":     <IconLayoutGrid size={15} />,
   "/transactions": <IconCreditCard size={15} />,
   "/refunds":      <IconUndo size={15} />,
+  "/cashouts":     <IconCreditCard size={15} />,
   "/lockers":      <IconLockClosed size={15} />,
   "/listings":     <IconTag size={15} />,
   "/users":        <IconUsers size={15} />,
@@ -257,9 +258,15 @@ export function AdminQuickActions({ className }: { className?: string }) {
 }
 
 export function AdminWorkspace({ navItems, children }: { navItems: NavItem[]; children: ReactNode }) {
-  const router             = useRouter();
-  const { user, logout }   = useAuth();
+  const router                       = useRouter();
+  const { user, loading, logout }    = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/auth/login");
+    }
+  }, [loading, user, router]);
 
   const handleLogout = async () => {
     try { await logout(); } catch { /* ignore */ }
@@ -269,6 +276,14 @@ export function AdminWorkspace({ navItems, children }: { navItems: NavItem[]; ch
   const initials = user?.fullName
     ? user.fullName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
     : "A";
+
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface-bg-0">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-primary-700 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface-bg-0">

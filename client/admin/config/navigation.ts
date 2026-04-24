@@ -20,6 +20,12 @@ export const adminNav: NavItem[] = [
     group: "operations",
   },
   {
+    label: "Cashouts",
+    shortLabel: "Cashouts",
+    href: "/cashouts",
+    group: "operations",
+  },
+  {
     label: "Lockers",
     shortLabel: "Lockers",
     href: "/lockers",
