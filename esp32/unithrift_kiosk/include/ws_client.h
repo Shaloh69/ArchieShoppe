@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <ArduinoWebsockets.h>
+#include <WiFiClientSecure.h>
 #include "config.h"
 #include "led_status.h"
 
@@ -34,7 +35,10 @@ inline void wsInit() {
 
 inline bool wsConnect() {
 #if WS_USE_SSL
-  // ArduinoWebsockets 0.5.x: SSL via wss:// URL scheme
+  // Skip certificate verification — ESP32 has no CA root store and Render uses
+  // Let's Encrypt certs which would require bundling the ISRG Root X1 CA.
+  // The connection is still TLS-encrypted; only cert identity check is skipped.
+  wsClient.setInsecure();
   String url = String("wss://") + WS_HOST + ":" + WS_PORT + WS_PATH;
   return wsClient.connect(url);
 #else
