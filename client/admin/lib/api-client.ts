@@ -282,6 +282,9 @@ export const reportsApi = {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
     return apiFetch<{ total: number; logs: ApiAuditLog[] }>(`/api/reports/audit-logs${qs}`);
   },
+
+  daily: (days: number) =>
+    apiFetch<{ rows: ApiDailyRow[]; days: number }>(`/api/reports/daily?days=${days}`),
 };
 
 // ─── API Types ─────────────────────────────────────────────────────────────────
@@ -402,6 +405,15 @@ export interface ApiOverview {
   totalSlots: number;
   occupiedSlots: number;
   platformRevenue: string | number;
+}
+
+export interface ApiDailyRow {
+  date: string;
+  sales_count: number;      sales_total: number;
+  commission_count: number; commission_total: number;
+  refund_count: number;     refund_total: number;
+  payout_count: number;     payout_total: number;
+  topup_count: number;      topup_total: number;
 }
 
 export interface ApiAuditLog {

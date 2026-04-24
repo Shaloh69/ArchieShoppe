@@ -52,11 +52,12 @@ export default function AdminOverviewPage() {
   const [pendingRefunds, setPendingRefunds] = useState<ApiRefund[]>([]);
   const [errorSlots, setErrorSlots] = useState<ApiLockerSlot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError(false);
+  const fetchAll = useCallback(async (silent = false) => {
+    if (silent) setRefreshing(true);
+    else { setLoading(true); setError(false); }
     try {
       const [overviewRes, ordersRes, refundsRes, lockersRes] = await Promise.all([
         reportsApi.overview(),
@@ -72,15 +73,19 @@ export default function AdminOverviewPage() {
           (s) => s.status === "ERROR" || s.status === "OUT_OF_SERVICE",
         ),
       );
+      if (!silent) setError(false);
     } catch {
-      setError(true);
+      if (!silent) setError(true);
     } finally {
-      setLoading(false);
+      if (silent) setRefreshing(false);
+      else setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     fetchAll();
+    const id = setInterval(() => fetchAll(true), 30_000);
+    return () => clearInterval(id);
   }, [fetchAll]);
 
   const kpis = overview
@@ -118,7 +123,7 @@ export default function AdminOverviewPage() {
     return (
       <div className="flex flex-col items-center gap-4 py-20 text-center">
         <p className="text-text-2">Failed to load overview data.</p>
-        <Button className="btn-brand" size="sm" onPress={fetchAll}>
+        <Button className="btn-brand" size="sm" onPress={() => fetchAll()}>
           Retry
         </Button>
       </div>
@@ -132,9 +137,12 @@ export default function AdminOverviewPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.22 }}
       >
-        <h1 className="text-2xl font-semibold text-text-1">Overview</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-text-1">Overview</h1>
+          {refreshing && <span className="text-xs text-text-3 animate-pulse">Refreshing…</span>}
+        </div>
         <p className="text-sm text-text-3">
-          Operational snapshot for transactions, refunds, and lockers.
+          Operational snapshot for transactions, refunds, and lockers. Auto-refreshes every 30s.
         </p>
       </motion.div>
 
