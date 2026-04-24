@@ -6,7 +6,7 @@ import { seedDatabase } from './db/seed';
 export async function runMigrations(): Promise<void> {
   console.log('[startup] Syncing database schema (prisma db push)...');
   try {
-    execSync('npx prisma db push --accept-data-loss', {
+    execSync('npx prisma db push', {
       stdio: 'inherit',
       cwd: path.resolve(__dirname, '../'),
     });

@@ -28,10 +28,15 @@ export function errorHandler(
   }
 
   if (err instanceof Error) {
-    if (process.env.NODE_ENV !== 'production') {
+    const status = (err as Error & { status?: number }).status;
+    const httpStatus = status && status >= 400 && status < 600 ? status : 500;
+
+    // Only log server errors — 4xx are expected operational failures
+    if (httpStatus >= 500) {
       console.error(err.stack);
     }
-    res.status(500).json({ message: err.message || 'Internal server error' });
+
+    res.status(httpStatus).json({ message: err.message || 'Internal server error' });
     return;
   }
 

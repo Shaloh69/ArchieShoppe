@@ -41,15 +41,25 @@ router.post('/refresh', async (req: Request, res: Response) => {
     res.status(401).json({ message: 'No refresh token' });
     return;
   }
-  const result = await authService.refresh(token);
-  res.cookie('refreshToken', result.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: '/api/auth/refresh',
-  });
-  res.json({ accessToken: result.accessToken });
+  try {
+    const result = await authService.refresh(token);
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/api/auth/refresh',
+    });
+    res.json({ accessToken: result.accessToken });
+  } catch {
+    // Token invalid, expired, or revoked — clear the stale cookie and ask client to re-login
+    res.clearCookie('refreshToken', {
+      path: '/api/auth/refresh',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+    res.status(401).json({ message: 'Session expired' });
+  }
 });
 
 router.post('/logout', async (req: Request, res: Response) => {
