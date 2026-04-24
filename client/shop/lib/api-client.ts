@@ -174,6 +174,26 @@ export const walletApi = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+
+  createQrPh: (amount: number) =>
+    apiFetch<{ sourceId: string; qrCode: string | null; checkoutUrl: string | null; amount: number; expiresAt: string | null }>("/api/wallet/qrph", {
+      method: "POST",
+      body: JSON.stringify({ amount }),
+    }),
+
+  checkQrPhStatus: (sourceId: string) =>
+    apiFetch<{ status: string; amount: number }>(`/api/wallet/qrph/${sourceId}/status`),
+
+  requestCashout: (body: { amount: number; method: string; accountNumber: string; accountName: string }) =>
+    apiFetch<{ request: ApiCashoutRequest }>("/api/wallet/cashout", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  myCashouts: (params?: Record<string, string>) => {
+    const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+    return apiFetch<{ total: number; requests: ApiCashoutRequest[] }>(`/api/wallet/cashouts${qs}`);
+  },
 };
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
@@ -419,6 +439,20 @@ export interface ApiWalletTxn {
   referenceId?: string;
   description?: string;
   createdAt: string;
+}
+
+export interface ApiCashoutRequest {
+  id: string;
+  userId: string;
+  user?: { id: string; fullName: string; email: string };
+  amount: string;
+  method: string;
+  accountNumber: string;
+  accountName: string;
+  status: string;
+  adminNotes?: string;
+  requestedAt: string;
+  processedAt?: string;
 }
 
 export interface ApiLockerSlot {
