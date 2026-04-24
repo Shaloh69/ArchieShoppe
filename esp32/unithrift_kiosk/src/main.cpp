@@ -12,17 +12,17 @@
     /ws/esp?deviceId=Kiosk-1
 
   Outbound messages (ESP → Server):
-    { "type": "DOOR_STATE",    "slotId": "S-01", "doorState": "OPEN"|"CLOSED" }
-    { "type": "HEARTBEAT" }
-    { "type": "STATUS_REPORT", "slots": [...] }
+    { "type": "DOOR_STATE",         "slotId": "S-01", "doorState": "OPEN"|"CLOSED" }
+    { "type": "HEARTBEAT",          "deviceId": "...", "rssi": -65, "uptime": 120, "freeHeap": 200000, "slots": [...] }
+    { "type": "STATUS_REPORT",      "deviceId": "...", "slots": [...] }
+    { "type": "PERSONAL_CODE_ENTERED", "slotId": "S-01", "code": "12345" }  // future: keypad
 
   Inbound messages (Server → ESP):
-    { "type": "UNLOCK_SLOT",   "slotId": "S-01" }
+    { "type": "UNLOCK_SLOT",   "slotId": "S-01" }  // sent on CODE_ACCEPTED or admin action
     { "type": "LOCK_SLOT",     "slotId": "S-01" }
     { "type": "REBOOT" }
     { "type": "HEARTBEAT_ACK" }
-    { "type": "CODE_ACCEPTED", "slotId": "S-01" }
-    { "type": "CODE_REJECTED", "slotId": "S-01" }
+    { "type": "CODE_REJECTED", "slotId": "S-01" }  // wrong personal code — show error to user
 */
 
 #include <Arduino.h>
@@ -154,6 +154,11 @@ void onWsMessage(websockets::WebsocketsMessage msg) {
     ESP.restart();
   } else if (strcmp(type, "HEARTBEAT_ACK") == 0) {
     // acknowledged — nothing needed
+  } else if (strcmp(type, "CODE_REJECTED") == 0) {
+    String slotId = doc["slotId"] | "";
+    Serial.printf("[cmd] CODE_REJECTED %s\n", slotId.c_str());
+    // Burst the LED rapidly so the user knows the code was wrong
+    ledTriggerActivity();
   } else {
     Serial.printf("[ws] Unknown type: %s\n", type);
   }
@@ -220,7 +225,7 @@ void loop() {
     doc["type"]      = "HEARTBEAT";
     doc["deviceId"]  = DEVICE_ID;
     doc["rssi"]      = WiFi.RSSI();           // dBm, e.g. -65
-    doc["uptime"]    = millis();              // ms since last boot
+    doc["uptime"]    = millis() / 1000;        // seconds since last boot
     doc["freeHeap"]  = ESP.getFreeHeap();     // bytes
     JsonArray slotArr = doc["slots"].to<JsonArray>();
     for (int i = 0; i < 6; i++) {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { authApi, setAccessToken, type ApiUser } from "@/lib/api-client";
+import { authApi, setAccessToken, silentRefresh, type ApiUser } from "@/lib/api-client";
 
 interface AuthState {
   user: ApiUser | null;
@@ -25,17 +25,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ApiUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // On mount — attempt silent refresh to restore session
+  // On mount — attempt silent refresh to restore session.
+  // Uses the deduplicated silentRefresh so concurrent API calls don't race on the same token.
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/api/auth/refresh`, {
-          method: "POST",
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setAccessToken(data.accessToken);
+        const refreshed = await silentRefresh();
+        if (refreshed) {
           const me = await authApi.me();
           setUser(me.user);
         }

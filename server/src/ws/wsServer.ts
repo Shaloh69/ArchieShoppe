@@ -5,6 +5,7 @@ import { handleEspMessage } from './espHandler';
 import { handleAdminMessage, registerAdmin, unregisterAdmin } from './adminHandler';
 import { handleCameraConnection } from './cameraHandler';
 import { verifyAccessToken } from '../utils/jwt';
+import { log } from '../utils/logger';
 
 export { TaggedWebSocket } from './wsState';
 
@@ -39,7 +40,7 @@ export function initWebSocketServer(server: Server): WebSocketServer {
 
   wss.on('close', () => clearInterval(interval));
 
-  console.log('[ws] WebSocket server initialised on /ws/esp, /ws/admin, /ws/camera');
+  log.sys.ok('WebSocket server ready  /ws/esp  /ws/admin  /ws/camera');
   return wss;
 }
 
@@ -52,7 +53,7 @@ function handleEspConnection(ws: TaggedWebSocket, req: IncomingMessage) {
   ws.isAlive = true;
   espConnections.set(deviceId, ws);
 
-  console.log(`[ws/esp] ${deviceId} connected`);
+  log.esp.connect(deviceId);
 
   ws.on('pong', () => {
     ws.isAlive = true;
@@ -62,16 +63,16 @@ function handleEspConnection(ws: TaggedWebSocket, req: IncomingMessage) {
     try {
       const data = JSON.parse(raw.toString());
       handleEspMessage(ws, data).catch((err: unknown) =>
-        console.error('[ws/esp] handler error:', err),
+        log.esp.error(deviceId, 'handler error', err),
       );
     } catch {
-      console.warn('[ws/esp] non-JSON message from', deviceId);
+      log.esp.warn(deviceId, 'non-JSON message received');
     }
   });
 
   ws.on('close', () => {
     espConnections.delete(deviceId);
-    console.log(`[ws/esp] ${deviceId} disconnected`);
+    log.esp.disconnect(deviceId);
   });
 }
 
@@ -95,7 +96,7 @@ function handleAdminConnection(ws: TaggedWebSocket, req: IncomingMessage) {
   ws.isAlive = true;
   registerAdmin(ws);
 
-  console.log('[ws/admin] Admin connected');
+  log.ws.adminConnect();
 
   ws.on('pong', () => {
     ws.isAlive = true;
@@ -105,15 +106,15 @@ function handleAdminConnection(ws: TaggedWebSocket, req: IncomingMessage) {
     try {
       const data = JSON.parse(raw.toString());
       handleAdminMessage(ws, data).catch((err: unknown) =>
-        console.error('[ws/admin] handler error:', err),
+        log.ws.error('admin handler error', err),
       );
     } catch {
-      console.warn('[ws/admin] non-JSON message');
+      log.ws.error('non-JSON message from admin');
     }
   });
 
   ws.on('close', () => {
     unregisterAdmin(ws);
-    console.log('[ws/admin] Admin disconnected');
+    log.ws.adminDisconnect();
   });
 }

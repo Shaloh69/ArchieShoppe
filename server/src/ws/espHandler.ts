@@ -2,6 +2,7 @@ import { TaggedWebSocket, espConnections, espHealth } from './wsState';
 import { prisma } from '../config/db';
 import { createAuditLog } from '../utils/audit';
 import { broadcastToAdmins } from './broadcaster';
+import { log } from '../utils/logger';
 
 interface EspSlot {
   slotId: string;
@@ -55,6 +56,7 @@ export async function handleEspMessage(ws: TaggedWebSocket, msg: EspMessage): Pr
         },
       });
       await createAuditLog('IOT', deviceId, slotId, `DOOR_${msg.doorState}`, { deviceId });
+      log.esp.door(deviceId, slotId, msg.doorState ?? '?');
       broadcastToAdmins({ type: 'LOCKER_UPDATE', slotId, status: newStatus, source: 'ESP32' });
       break;
     }
@@ -77,9 +79,11 @@ export async function handleEspMessage(ws: TaggedWebSocket, msg: EspMessage): Pr
             metadata: { orderId: order.id },
           },
         });
+        log.esp.code(deviceId, slotId, true);
         broadcastToAdmins({ type: 'CODE_ACCEPTED', slotId, orderId: order.id });
       } else {
         ws.send(JSON.stringify({ type: 'CODE_REJECTED', slotId }));
+        log.esp.code(deviceId, slotId, false);
       }
       break;
     }
@@ -96,6 +100,7 @@ export async function handleEspMessage(ws: TaggedWebSocket, msg: EspMessage): Pr
       espHealth.slots = msg.slots ?? [];
 
       ws.send(JSON.stringify({ type: 'HEARTBEAT_ACK', ts: Date.now() }));
+      log.esp.heartbeat(espHealth.deviceId, espHealth.rssi, espHealth.uptime, espHealth.freeHeap);
 
       // Broadcast live health to all connected admins
       broadcastToAdmins({
@@ -122,13 +127,17 @@ export async function handleEspMessage(ws: TaggedWebSocket, msg: EspMessage): Pr
     }
 
     default:
-      console.warn(`[ws/esp] Unknown message type: ${msg.type} from ${deviceId}`);
+      log.esp.warn(deviceId, `unknown message type: ${msg.type}`);
   }
 }
 
 export function sendCommandToEsp(deviceId: string, command: Record<string, unknown>): boolean {
   const ws = espConnections.get(deviceId);
-  if (!ws || ws.readyState !== 1) return false;
+  if (!ws || ws.readyState !== 1) {
+    log.esp.warn(deviceId, `sendCommand failed — not connected  type=${command.type}`);
+    return false;
+  }
   ws.send(JSON.stringify(command));
+  log.esp.cmd(deviceId, String(command.type), command.slotId as string | undefined);
   return true;
 }

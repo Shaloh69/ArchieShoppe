@@ -40,12 +40,13 @@
 
 // ─── Relay GPIO pins (active-LOW, IN1-IN6 on a 6-channel relay module) ───────
 // Each relay controls one locker slot solenoid/motor lock
-#define RELAY_S01  4
-#define RELAY_S02  5
-#define RELAY_S03  16
-#define RELAY_S04  17
+// Wiring: IN1→GPIO23  IN2→GPIO22  IN3→GPIO21  IN4→GPIO19  IN5→GPIO18  IN6→GPIO5
+#define RELAY_S01  23
+#define RELAY_S02  22
+#define RELAY_S03  21
+#define RELAY_S04  19
 #define RELAY_S05  18
-#define RELAY_S06  19
+#define RELAY_S06  5
 
 // ─── Door sensor GPIO pins (magnetic reed switches, NC = normally-closed) ────
 // LOW  = door closed (magnet present)

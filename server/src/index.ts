@@ -1,14 +1,14 @@
 import './config/env'; // validate env first
 import 'express-async-errors'; // patches Express 4 to forward async rejections to errorHandler
 import http from 'http';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
+import { log } from './utils/logger';
 import { runMigrations, runSeed, warmPythonServer } from './startup';
 import { initWebSocketServer } from './ws/wsServer';
 import { startHoldReleaseCron } from './cron/holdRelease';
@@ -54,8 +54,17 @@ app.use(
 // Webhook route needs raw body BEFORE express.json
 app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRoutes);
 
-// Standard middleware
-app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+// Color-coded HTTP request logger
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  // Skip noisy heartbeat polling and health checks from the log
+  const skip = req.path === '/api/health' || req.path === '/api/lockers';
+  if (!skip) log.api.req(req.method, req.path, req.ip ?? '');
+  res.on('finish', () => {
+    if (!skip) log.api.res(req.method, req.path, res.statusCode, Date.now() - start);
+  });
+  next();
+});
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -115,10 +124,10 @@ async function bootstrap() {
     startSubscriptionExpiryCron();
 
     server.listen(env.PORT, () => {
-      console.log(`[server] UniThrift API listening on port ${env.PORT}`);
+      log.sys.ok(`UniThrift API listening on port ${env.PORT}  env=${env.NODE_ENV}`);
     });
   } catch (err) {
-    console.error('[server] Fatal startup error:', err);
+    log.sys.error('Fatal startup error', err);
     process.exit(1);
   }
 }

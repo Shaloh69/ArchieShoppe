@@ -68,19 +68,27 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
   return res.json() as Promise<T>;
 }
 
-async function silentRefresh(): Promise<boolean> {
-  try {
-    const res = await fetch(`${BASE}/api/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    _accessToken = data.accessToken;
-    return true;
-  } catch {
-    return false;
-  }
+let _refreshPromise: Promise<boolean> | null = null;
+
+export async function silentRefresh(): Promise<boolean> {
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${BASE}/api/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      _accessToken = data.accessToken;
+      return true;
+    } catch {
+      return false;
+    } finally {
+      _refreshPromise = null;
+    }
+  })();
+  return _refreshPromise;
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────

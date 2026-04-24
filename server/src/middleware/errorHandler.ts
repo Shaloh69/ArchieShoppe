@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { Prisma } from '@prisma/client';
+import { log } from '../utils/logger';
 
 export function errorHandler(
   err: unknown,
@@ -33,7 +34,7 @@ export function errorHandler(
 
     // Only log server errors — 4xx are expected operational failures
     if (httpStatus >= 500) {
-      console.error(err.stack);
+      log.sys.error(err.message, err.stack);
     }
 
     res.status(httpStatus).json({ message: err.message || 'Internal server error' });
