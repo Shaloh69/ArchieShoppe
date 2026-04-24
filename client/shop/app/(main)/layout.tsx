@@ -9,7 +9,7 @@ import { shopNav } from "@/config/navigation";
 
 const ICONS_OUTLINE: Record<string, React.ReactNode> = {
   grid: (
-    <svg fill="none" height="22" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="22">
+    <svg fill="none" height="20" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="20">
       <rect height="7" rx="1.5" width="7" x="3" y="3" />
       <rect height="7" rx="1.5" width="7" x="14" y="3" />
       <rect height="7" rx="1.5" width="7" x="14" y="14" />
@@ -17,37 +17,43 @@ const ICONS_OUTLINE: Record<string, React.ReactNode> = {
     </svg>
   ),
   plus: (
-    <svg fill="none" height="22" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="22">
+    <svg fill="none" height="20" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="20">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v8M8 12h8" />
     </svg>
   ),
   clock: (
-    <svg fill="none" height="22" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="22">
+    <svg fill="none" height="20" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="20">
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 3" />
     </svg>
   ),
   wallet: (
-    <svg fill="none" height="22" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="22">
+    <svg fill="none" height="20" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="20">
       <rect height="14" rx="2" width="20" x="2" y="7" />
       <circle cx="17" cy="14" r="1" fill="currentColor" />
       <path d="M2 10h20" />
     </svg>
   ),
   list: (
-    <svg fill="none" height="22" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="22">
+    <svg fill="none" height="20" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="20">
       <path d="M9 6h12M9 12h12M9 18h12" />
       <circle cx="4" cy="6"  r="1.2" fill="currentColor" />
       <circle cx="4" cy="12" r="1.2" fill="currentColor" />
       <circle cx="4" cy="18" r="1.2" fill="currentColor" />
     </svg>
   ),
+  person: (
+    <svg fill="none" height="20" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="20">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
+  ),
 };
 
 const ICONS_FILLED: Record<string, React.ReactNode> = {
   grid: (
-    <svg fill="currentColor" height="22" viewBox="0 0 24 24" width="22">
+    <svg fill="currentColor" height="20" viewBox="0 0 24 24" width="20">
       <rect height="7" rx="1.5" width="7" x="3" y="3" />
       <rect height="7" rx="1.5" width="7" x="14" y="3" />
       <rect height="7" rx="1.5" width="7" x="14" y="14" />
@@ -55,31 +61,37 @@ const ICONS_FILLED: Record<string, React.ReactNode> = {
     </svg>
   ),
   plus: (
-    <svg fill="none" height="22" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24" width="22">
-      <circle cx="12" cy="12" fill="currentColor" r="9" stroke="none" />
-      <path d="M12 8v8M8 12h8" stroke="white" />
+    <svg fill="none" height="20" viewBox="0 0 24 24" width="20">
+      <circle cx="12" cy="12" fill="currentColor" r="9" />
+      <path d="M12 8v8M8 12h8" stroke="white" strokeWidth="2" />
     </svg>
   ),
   clock: (
-    <svg fill="currentColor" height="22" viewBox="0 0 24 24" width="22">
+    <svg fill="currentColor" height="20" viewBox="0 0 24 24" width="20">
       <path clipRule="evenodd" d="M12 3a9 9 0 1 0 0 18A9 9 0 0 0 12 3zm1 5.5a1 1 0 0 0-2 0V12c0 .27.107.52.293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8.5z" fillRule="evenodd" />
     </svg>
   ),
   wallet: (
-    <svg fill="currentColor" height="22" viewBox="0 0 24 24" width="22">
+    <svg fill="currentColor" height="20" viewBox="0 0 24 24" width="20">
       <rect height="14" rx="2" width="20" x="2" y="7" />
       <circle cx="17" cy="14" fill="white" r="1" />
       <rect fill="white" height="1" rx="0.5" width="20" x="2" y="10" />
     </svg>
   ),
   list: (
-    <svg fill="currentColor" height="22" viewBox="0 0 24 24" width="22">
+    <svg fill="currentColor" height="20" viewBox="0 0 24 24" width="20">
       <rect height="2" rx="1" width="12" x="9" y="5" />
       <rect height="2" rx="1" width="12" x="9" y="11" />
       <rect height="2" rx="1" width="12" x="9" y="17" />
       <circle cx="4" cy="6"  r="1.5" />
       <circle cx="4" cy="12" r="1.5" />
       <circle cx="4" cy="18" r="1.5" />
+    </svg>
+  ),
+  person: (
+    <svg fill="currentColor" height="20" viewBox="0 0 24 24" width="20">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
     </svg>
   ),
 };
@@ -89,7 +101,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen pb-[60px]">
+    <div className="min-h-screen pb-[58px]">
       {/* Top header */}
       <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-bg-1/95 px-4 py-3 backdrop-blur-sm">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
@@ -117,7 +129,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
       </header>
 
-      {/* Page content with fade-up transition */}
+      {/* Page content */}
       <motion.main
         className="mx-auto max-w-2xl px-4 py-4"
         key={pathname}
@@ -128,15 +140,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         {children}
       </motion.main>
 
-      {/* Bottom navigation */}
+      {/* Bottom navigation — 6 tabs */}
       <nav className="bottom-nav">
-        <div className="mx-auto flex max-w-2xl items-center justify-around px-1 py-1">
+        <div className="mx-auto flex max-w-2xl items-center justify-around px-0.5 py-1">
           {shopNav.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
               <NextLink
                 key={item.href}
-                className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                className={`relative flex flex-col items-center gap-0.5 px-2 py-1.5 text-[10px] font-medium transition-colors ${
                   active ? "text-brand-primary-600" : "text-text-4 hover:text-text-2"
                 }`}
                 href={item.href}
@@ -144,7 +156,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 {active && (
                   <motion.span
                     layoutId="tab-indicator"
-                    className="absolute -top-px left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-brand-primary-600"
+                    className="absolute -top-px left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-brand-primary-600"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
