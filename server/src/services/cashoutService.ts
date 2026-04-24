@@ -14,41 +14,41 @@ export async function requestCashout(
   userId: string,
   data: z.infer<typeof cashoutRequestSchema>,
 ) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { walletBalance: true },
-  });
-  if (!user) throw Object.assign(new Error('User not found'), { status: 404 });
-
-  if (user.walletBalance.toNumber() < data.amount) {
-    throw Object.assign(new Error('Insufficient wallet balance'), { status: 400 });
-  }
-
-  // Debit wallet immediately so balance reflects the pending cashout
-  const [request] = await prisma.$transaction([
-    prisma.cashoutRequest.create({
-      data: {
-        userId,
-        amount: data.amount,
-        method: data.method,
-        accountNumber: data.accountNumber,
-        accountName: data.accountName,
-        status: CashoutStatus.PENDING,
-      },
-    }),
-    prisma.user.update({
-      where: { id: userId },
+  // Debit wallet atomically — the WHERE balance guard prevents overdrafts under concurrency
+  const request = await prisma.$transaction(async (tx) => {
+    const result = await tx.user.updateMany({
+      where: { id: userId, walletBalance: { gte: data.amount } },
       data: { walletBalance: { decrement: data.amount } },
-    }),
-    prisma.walletTransaction.create({
-      data: {
-        userId,
-        type: 'CASHOUT',
-        amount: data.amount,
-        description: `Cashout request via ${data.method} to ${data.accountNumber}`,
-      },
-    }),
-  ]);
+    });
+    if (result.count === 0) {
+      const exists = await tx.user.findUnique({ where: { id: userId }, select: { id: true } });
+      throw Object.assign(
+        new Error(exists ? 'Insufficient wallet balance' : 'User not found'),
+        { status: exists ? 400 : 404 },
+      );
+    }
+    const [cashout] = await Promise.all([
+      tx.cashoutRequest.create({
+        data: {
+          userId,
+          amount: data.amount,
+          method: data.method,
+          accountNumber: data.accountNumber,
+          accountName: data.accountName,
+          status: CashoutStatus.PENDING,
+        },
+      }),
+      tx.walletTransaction.create({
+        data: {
+          userId,
+          type: 'CASHOUT',
+          amount: data.amount,
+          description: `Cashout request via ${data.method} to ${data.accountNumber}`,
+        },
+      }),
+    ]);
+    return cashout;
+  });
 
   await createAuditLog('ORDER', userId, request.id, 'CASHOUT_REQUESTED', {
     amount: data.amount,

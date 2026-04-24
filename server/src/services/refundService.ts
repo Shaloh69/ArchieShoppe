@@ -137,7 +137,15 @@ export async function processRefund(
 }
 
 export async function getAllRefunds(page = 1, limit = 20, status?: string) {
-  const where = status ? { status: status as RefundStatus } : {};
+  // "PENDING" and "APPROVED" are UI aliases — map them to the actual enum values
+  let where: { status?: RefundStatus | { in: RefundStatus[] } } = {};
+  if (status === 'PENDING') {
+    where = { status: { in: ['REQUESTED', 'PROCESSING'] as RefundStatus[] } };
+  } else if (status === 'APPROVED') {
+    where = { status: { in: ['APPROVED', 'PARTIAL_APPROVED'] as RefundStatus[] } };
+  } else if (status) {
+    where = { status: status as RefundStatus };
+  }
   const skip = (page - 1) * limit;
   const [total, refunds] = await Promise.all([
     prisma.refund.count({ where }),

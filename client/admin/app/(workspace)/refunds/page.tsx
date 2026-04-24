@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@heroui/button";
 import {
   Drawer,
@@ -48,10 +48,7 @@ export default function AdminRefundsPage() {
     fetchRefunds(tab);
   }, [fetchRefunds, tab]);
 
-  const visible = useMemo(
-    () => refunds.filter((entry) => entry.status === tab),
-    [refunds, tab],
-  );
+  const visible = refunds;
   const selected = visible.find((entry) => entry.id === selectedId) ?? null;
 
   const handleProcess = async (approved: boolean) => {
