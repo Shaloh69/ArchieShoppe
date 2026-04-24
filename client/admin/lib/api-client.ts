@@ -77,7 +77,7 @@ async function apiFetch<T>(
 
 let _refreshPromise: Promise<boolean> | null = null;
 
-async function silentRefresh(): Promise<boolean> {
+export async function silentRefresh(): Promise<boolean> {
   if (_refreshPromise) return _refreshPromise;
   _refreshPromise = (async () => {
     try {

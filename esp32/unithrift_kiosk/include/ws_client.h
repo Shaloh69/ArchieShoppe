@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include <ArduinoWebsockets.h>
 #include <WiFiClientSecure.h>
-#include <esp_task_wdt.h>
 #include "config.h"
 #include "led_status.h"
 
@@ -45,13 +44,7 @@ inline bool wsConnect() {
   String url = String("wss://") + WS_HOST + WS_PATH;
   Serial.printf("[ws] Connecting to %s\n", url.c_str());
 
-  // SSL handshake blocks for up to 30 s on a Render cold start.
-  // Unsubscribe the current task from TWDT for the duration so the chip
-  // doesn't reset mid-handshake, then re-subscribe immediately after.
-  esp_task_wdt_delete(NULL);
   bool ok = wsClient.connect(url);
-  esp_task_wdt_add(NULL);
-
   if (!ok) Serial.println("[ws] connect() returned false");
   return ok;
 #else

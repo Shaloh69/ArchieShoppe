@@ -78,6 +78,8 @@ export async function createTopUpSession(userId: string, data: z.infer<typeof to
 }
 
 // ─── QR Ph (InstaPay / PESONet) ────────────────────────────────────────────────
+// PayMongo QRPh uses Payment Intents + Payment Methods — NOT the Sources API.
+// Flow: create PaymentIntent → create PaymentMethod (type=qrph) → attach → read QR.
 
 export const qrPhSchema = z.object({
   amount: z.number().int().min(10000, 'Minimum ₱100').max(1000000, 'Max ₱10,000'),
@@ -86,23 +88,32 @@ export const qrPhSchema = z.object({
 export async function createQrPhSource(userId: string, amountInCentavos: number) {
   const amountInPesos = amountInCentavos / 100;
 
-  // QRPh Sources API requires billing.name and billing.email
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { fullName: true, email: true },
   });
   if (!user) throw Object.assign(new Error('User not found'), { status: 404 });
 
-  const response = await paymongoClient.post('/sources', {
+  // Step 1 — create a PaymentIntent for the amount
+  const intentRes = await paymongoClient.post('/payment_intents', {
     data: {
       attributes: {
         amount: amountInCentavos,
         currency: 'PHP',
+        payment_method_allowed: ['qrph'],
+        capture_type: 'automatic',
+        description: `UniThrift Wallet Top-up ₱${amountInPesos}`,
+      },
+    },
+  });
+  const intent = intentRes.data.data;
+  const clientKey: string = intent.attributes.client_key;
+
+  // Step 2 — create a PaymentMethod of type qrph
+  const methodRes = await paymongoClient.post('/payment_methods', {
+    data: {
+      attributes: {
         type: 'qrph',
-        redirect: {
-          success: `${env.CLIENT_URL.split(',')[0].trim()}/app/wallet?topup=success`,
-          failed: `${env.CLIENT_URL.split(',')[0].trim()}/app/wallet?topup=failed`,
-        },
         billing: {
           name: user.fullName,
           email: user.email,
@@ -110,15 +121,30 @@ export async function createQrPhSource(userId: string, amountInCentavos: number)
       },
     },
   });
+  const method = methodRes.data.data;
 
-  const source = response.data.data;
-  const attrs = source.attributes;
+  // Step 3 — attach the PaymentMethod to the PaymentIntent
+  const attachRes = await paymongoClient.post(`/payment_intents/${intent.id}/attach`, {
+    data: {
+      attributes: {
+        payment_method: method.id,
+        client_key: clientKey,
+      },
+    },
+  });
+  const attached = attachRes.data.data;
+  const nextAction = attached.attributes.next_action;
 
-  // Store with source ID in checkoutSessionId column
+  // QR code lives in next_action.qr_code.image_data (base64 PNG)
+  // or next_action.qr_code.qr_code_string (raw QR payload)
+  const qrImageData: string | null = nextAction?.qr_code?.image_data ?? null;
+  const qrString: string | null = nextAction?.qr_code?.qr_code_string ?? null;
+
+  // Store the PaymentIntent ID in checkoutSessionId for webhook matching
   await prisma.paymongoPayment.create({
     data: {
       userId,
-      checkoutSessionId: source.id,
+      checkoutSessionId: intent.id,
       amount: amountInPesos,
       status: 'pending',
       paymentMethod: 'qrph',
@@ -126,20 +152,22 @@ export async function createQrPhSource(userId: string, amountInCentavos: number)
   });
 
   return {
-    sourceId: source.id,
-    qrCode: attrs.qr_code as string | null,
-    checkoutUrl: attrs.redirect?.checkout_url as string | null,
+    sourceId: intent.id,
+    qrCode: qrImageData ?? qrString,
+    checkoutUrl: null,
     amount: amountInPesos,
-    expiresAt: attrs.expires_at ? new Date(attrs.expires_at * 1000).toISOString() : null,
+    expiresAt: null,
   };
 }
 
-export async function getQrPhSourceStatus(sourceId: string) {
-  const response = await paymongoClient.get(`/sources/${sourceId}`);
-  const source = response.data.data;
+export async function getQrPhSourceStatus(intentId: string) {
+  const response = await paymongoClient.get(`/payment_intents/${intentId}`);
+  const intent = response.data.data;
+  // PaymentIntent statuses: awaiting_payment_method | awaiting_next_action | processing | succeeded | cancelled
+  const status: string = intent.attributes.status;
   return {
-    status: source.attributes.status as string,
-    amount: (source.attributes.amount as number) / 100,
+    status: status === 'succeeded' ? 'chargeable' : status,
+    amount: (intent.attributes.amount as number) / 100,
   };
 }
 
@@ -184,12 +212,12 @@ export async function handleWebhook(rawBody: Buffer, signatureHeader: string) {
     return handleCheckoutPaid(event);
   }
 
-  if (eventType === 'source.chargeable') {
-    return handleSourceChargeable(event);
+  if (eventType === 'payment.paid') {
+    return handlePaymentPaid(event);
   }
 
-  if (eventType === 'qrph.expired') {
-    return handleQrPhExpired(event);
+  if (eventType === 'payment_intent.payment_failed') {
+    return handlePaymentFailed(event);
   }
 
   return { received: true };
@@ -228,52 +256,36 @@ async function handleCheckoutPaid(event: Record<string, unknown>) {
   return { received: true };
 }
 
-async function handleSourceChargeable(event: Record<string, unknown>) {
-  type SourceEvent = { data: { attributes: { data: { id: string; attributes: { amount: number } } } } };
-  const sourceId = (event as SourceEvent).data?.attributes?.data?.id;
-  const sourceAmount = (event as SourceEvent).data?.attributes?.data?.attributes?.amount;
+// Fires for both QRPh PaymentIntent success and checkout session payments
+async function handlePaymentPaid(event: Record<string, unknown>) {
+  type PaymentPaidEvent = { data: { attributes: { data: { id: string; attributes: { payment_intent_id?: string } } } } };
+  const paymentData = (event as PaymentPaidEvent).data?.attributes?.data;
+  if (!paymentData) return { received: true };
 
-  if (!sourceId) return { received: true };
+  // For QRPh (Payment Intents flow), match by payment_intent_id; otherwise by payment id
+  const intentId: string | undefined = paymentData.attributes?.payment_intent_id;
+  const matchId = intentId ?? paymentData.id;
 
-  // Mark paid atomically — updateMany returns count 0 if already processed,
-  // preventing double-credits when PayMongo retries the webhook.
   const result = await prisma.paymongoPayment.updateMany({
-    where: { checkoutSessionId: sourceId, status: { not: 'paid' } },
+    where: { checkoutSessionId: matchId, status: { not: 'paid' } },
     data: { status: 'paid', completedAt: new Date() },
   });
   if (result.count === 0) return { received: true };
 
-  const payment = await prisma.paymongoPayment.findUnique({
-    where: { checkoutSessionId: sourceId },
+  const payment = await prisma.paymongoPayment.findFirst({
+    where: { checkoutSessionId: matchId },
   });
   if (!payment) return { received: true };
-
-  // Create the PayMongo Payment resource from the source (best-effort)
-  try {
-    await paymongoClient.post('/payments', {
-      data: {
-        attributes: {
-          amount: sourceAmount ?? Math.round(payment.amount.toNumber() * 100),
-          currency: 'PHP',
-          source: { id: sourceId, type: 'source' },
-          description: `UniThrift Wallet Top-up ₱${payment.amount.toNumber()} via QR Ph`,
-        },
-      },
-    });
-  } catch (err) {
-    // Payment may have already been created on a previous webhook retry — not fatal
-    log.sys.warn(`QR Ph payment creation failed for source ${sourceId} — wallet credit will still proceed`);
-  }
 
   await creditWallet(
     payment.userId,
     payment.amount.toNumber(),
     'TOP_UP',
-    sourceId,
+    matchId,
     `Wallet top-up ₱${payment.amount.toNumber()} via QR Ph (InstaPay/PESONet)`,
   );
 
-  await createAuditLog('ORDER', payment.userId, sourceId, 'WALLET_TOP_UP', {
+  await createAuditLog('ORDER', payment.userId, matchId, 'WALLET_TOP_UP', {
     amount: payment.amount.toNumber(),
     method: 'qrph',
   });
@@ -281,17 +293,17 @@ async function handleSourceChargeable(event: Record<string, unknown>) {
   return { received: true };
 }
 
-async function handleQrPhExpired(event: Record<string, unknown>) {
-  type SourceEvent = { data: { attributes: { data: { id: string } } } };
-  const sourceId = (event as SourceEvent).data?.attributes?.data?.id;
-  if (!sourceId) return { received: true };
+async function handlePaymentFailed(event: Record<string, unknown>) {
+  type FailedEvent = { data: { attributes: { data: { id: string } } } };
+  const intentId = (event as FailedEvent).data?.attributes?.data?.id;
+  if (!intentId) return { received: true };
 
   await prisma.paymongoPayment.updateMany({
-    where: { checkoutSessionId: sourceId, status: 'pending' },
-    data: { status: 'expired' },
+    where: { checkoutSessionId: intentId, status: 'pending' },
+    data: { status: 'failed' },
   });
 
-  log.sys.warn(`QR Ph source expired: ${sourceId}`);
+  log.sys.warn(`QR Ph payment failed for intent: ${intentId}`);
   return { received: true };
 }
 
