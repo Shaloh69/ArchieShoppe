@@ -7,16 +7,27 @@ import cron from 'node-cron';
 
 export async function runMigrations(): Promise<void> {
   log.sys.info('Syncing database schema…');
-  try {
-    execSync('npx prisma db push --accept-data-loss', {
-      stdio: 'inherit',
-      cwd: path.resolve(__dirname, '../'),
-    });
-    log.sys.ok('Schema synced.');
-  } catch (err) {
-    log.sys.error('Schema sync failed — server cannot start safely', err);
-    throw err;
+
+  // Aiven free-tier wakes from power-off slowly — retry up to 5× with 15 s gaps
+  const MAX_ATTEMPTS = 5;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      execSync('npx prisma db push --accept-data-loss', {
+        stdio: 'inherit',
+        cwd: path.resolve(__dirname, '../'),
+      });
+      break; // success
+    } catch (err) {
+      if (attempt === MAX_ATTEMPTS) {
+        log.sys.error('Schema sync failed after all retries — server cannot start safely', err);
+        throw err;
+      }
+      log.sys.warn(`DB not ready (attempt ${attempt}/${MAX_ATTEMPTS}) — retrying in 15 s…`);
+      await new Promise((r) => setTimeout(r, 15000));
+    }
   }
+
+  log.sys.ok('Schema synced.');
   await prisma.$connect();
   log.sys.ok('Database connection established.');
 }
