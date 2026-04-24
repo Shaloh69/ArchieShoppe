@@ -6,8 +6,10 @@ static const int DOOR_PINS[6] = {
   DOOR_S01, DOOR_S02, DOOR_S03, DOOR_S04, DOOR_S05, DOOR_S06
 };
 
-// Previous door states to detect transitions
-static bool prevDoorOpen[6] = {false, false, false, false, false, false};
+// Previous door states and debounce timestamps
+static bool          prevDoorOpen[6]    = {false, false, false, false, false, false};
+static unsigned long lastDoorChange[6]  = {0, 0, 0, 0, 0, 0};
+#define DOOR_DEBOUNCE_MS 50
 
 inline void doorSensorInit() {
   for (int i = 0; i < 6; i++) {
@@ -29,12 +31,20 @@ inline bool isDoorOpen(int slotIndex) {
 }
 
 // Check for state transitions; calls onDoorChange(slotId, isOpen) on change
+// S-05 (GPIO 36) and S-06 (GPIO 39) are skipped when DOOR_SKIP_FLOATING is
+// defined — those pins have no internal pull-up and will float without an
+// external 10 kΩ pull-up resistor. Add the resistors and remove the define.
 template<typename Callback>
 void pollDoorSensors(Callback onDoorChange) {
+  unsigned long now = millis();
   for (int i = 0; i < 6; i++) {
+#ifdef DOOR_SKIP_FLOATING
+    if (i == 4 || i == 5) continue;  // skip S-05/S-06 until pull-ups are added
+#endif
     bool open = isDoorOpen(i);
-    if (open != prevDoorOpen[i]) {
-      prevDoorOpen[i] = open;
+    if (open != prevDoorOpen[i] && (now - lastDoorChange[i]) >= DOOR_DEBOUNCE_MS) {
+      prevDoorOpen[i]   = open;
+      lastDoorChange[i] = now;
       onDoorChange(SLOT_IDS[i], open);
     }
   }

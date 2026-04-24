@@ -17,6 +17,22 @@ const paymongoClient = axios.create({
   },
 });
 
+// Unwrap PayMongo's nested error array into a readable message and re-throw
+// so the Express error handler forwards the real reason to the client.
+paymongoClient.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (axios.isAxiosError(err) && err.response) {
+      const errors = err.response.data?.errors as Array<{ detail: string; code: string }> | undefined;
+      const detail = errors?.[0]?.detail ?? err.response.data?.message ?? err.message;
+      const status = err.response.status;
+      log.sys.error(`PayMongo API error ${status}`, detail);
+      throw Object.assign(new Error(`PayMongo: ${detail}`), { status });
+    }
+    throw err;
+  },
+);
+
 // ─── Checkout Session (GCash / Card / Maya) ────────────────────────────────────
 
 export const topUpSchema = z.object({
