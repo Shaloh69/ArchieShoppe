@@ -39,14 +39,24 @@ inline bool wsConnect() {
   // Skip certificate verification — ESP32 has no CA root store.
   // Connection is still TLS-encrypted; only cert identity check is skipped.
   wsClient.setInsecure();
-  String url = String("wss://") + WS_HOST + ":" + WS_PORT + WS_PATH;
-  // SSL handshake can take 3-8 s on first connect (Render cold start + TLS).
-  // Feed the watchdog so the TWDT doesn't reset the chip mid-handshake.
-  esp_task_wdt_reset();
+
+  // Port 443 is the default for wss:// — do NOT include it in the URL.
+  // ArduinoWebsockets 0.5.x URL parser misbehaves with explicit :443.
+  String url = String("wss://") + WS_HOST + WS_PATH;
+  Serial.printf("[ws] Connecting to %s\n", url.c_str());
+
+  // SSL handshake blocks for up to 30 s on a Render cold start.
+  // Unsubscribe the current task from TWDT for the duration so the chip
+  // doesn't reset mid-handshake, then re-subscribe immediately after.
+  esp_task_wdt_delete(NULL);
   bool ok = wsClient.connect(url);
-  esp_task_wdt_reset();
+  esp_task_wdt_add(NULL);
+
+  if (!ok) Serial.println("[ws] connect() returned false");
   return ok;
 #else
+  String url = String("ws://") + WS_HOST + ":" + WS_PORT + WS_PATH;
+  Serial.printf("[ws] Connecting to %s\n", url.c_str());
   return wsClient.connect(WS_HOST, WS_PORT, WS_PATH);
 #endif
 }

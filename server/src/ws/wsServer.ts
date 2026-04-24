@@ -10,7 +10,7 @@ import { log } from '../utils/logger';
 export { TaggedWebSocket } from './wsState';
 
 export function initWebSocketServer(server: Server): WebSocketServer {
-  const wss = new WebSocketServer({ server, path: undefined });
+  const wss = new WebSocketServer({ server });
 
   wss.on('connection', (ws: TaggedWebSocket, req: IncomingMessage) => {
     const url = req.url ?? '';

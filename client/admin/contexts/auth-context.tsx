@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { authApi, setAccessToken, type ApiUser } from "@/lib/api-client";
+import { authApi, setAccessToken, silentRefresh, type ApiUser } from "@/lib/api-client";
 
 interface AuthState {
   user: ApiUser | null;
@@ -29,13 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/api/auth/refresh`, {
-          method: "POST",
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setAccessToken(data.accessToken);
+        const refreshed = await silentRefresh();
+        if (refreshed) {
           const me = await authApi.me();
           setUser(me.user);
         }
@@ -49,6 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const data = await authApi.login({ email, password });
+    if (data.user.role !== "ADMIN") {
+      throw Object.assign(new Error("Access denied. Admin accounts only."), { status: 403 });
+    }
     setAccessToken(data.accessToken);
     setUser(data.user);
   }, []);
