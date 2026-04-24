@@ -43,7 +43,6 @@ export function Providers({ children, themeProps }: ProvidersProps) {
               },
               shouldShowTimeoutProgress: true,
               timeout: 4000,
-              variant: "flat",
             }}
           />
         </AuthProvider>
