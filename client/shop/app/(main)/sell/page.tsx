@@ -20,6 +20,7 @@ import {
   type ApiLockerSlot,
 } from "@/lib/api-client";
 import { notifyError, notifySuccess } from "@/lib/unithrift-toast";
+import { useAuth } from "@/contexts/auth-context";
 
 const STEPS = [
   { label: "Item details",      icon: "📋" },
@@ -31,6 +32,7 @@ const STEPS = [
 const INPUT_WRAP = "bg-surface-bg-3 border border-border-subtle focus-within:border-brand-primary-400 transition-colors";
 
 export default function SellPage() {
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -126,6 +128,20 @@ export default function SellPage() {
       }
     }
   };
+
+  // Role gate — only SELLER and ADMIN can access
+  if (user && user.role === "BUYER") {
+    return (
+      <div className="flex flex-col items-center gap-4 py-20 text-center">
+        <span className="text-5xl">🏷️</span>
+        <p className="text-xl font-extrabold text-text-1">Sellers only</p>
+        <p className="text-sm text-text-3">Upgrade your account to start listing items.</p>
+        <a href="/profile" className="rounded-xl bg-brand-primary-600 px-6 py-2.5 text-sm font-semibold text-white">
+          Go to Profile
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

@@ -243,11 +243,46 @@ export const usersApi = {
       body: JSON.stringify(body),
     }),
 
-  updateMe: (body: { fullName?: string }) =>
+  updateMe: (body: { fullName?: string; newPassword?: string; avatarUrl?: string }) =>
     apiFetch<{ user: ApiUser }>("/api/users/me", {
       method: "PATCH",
       body: JSON.stringify(body),
     }),
+
+  uploadAvatar: (form: FormData) =>
+    apiFetch<{ user: ApiUser }>("/api/users/me/avatar", {
+      method: "POST",
+      body: form,
+    }),
+
+  upgradeToSeller: () =>
+    apiFetch<{ user: ApiUser }>("/api/users/me/role", { method: "PATCH" }),
+};
+
+// ─── Wishlist ────────────────────────────────────────────────────────────────
+export const wishlistApi = {
+  toggle: (itemId: string) =>
+    apiFetch<{ saved: boolean }>(`/api/wishlist/${itemId}`, { method: "POST" }),
+
+  mine: () =>
+    apiFetch<{ items: ApiItem[] }>("/api/wishlist"),
+
+  remove: (itemId: string) =>
+    apiFetch<{ saved: boolean }>(`/api/wishlist/${itemId}`, { method: "DELETE" }),
+};
+
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+export const reviewsApi = {
+  create: (body: { orderId: string; rating: number; comment?: string }) =>
+    apiFetch<{ review: ApiReview }>("/api/reviews", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  bySeller: (sellerId: string) =>
+    apiFetch<{ reviews: ApiReview[]; avgRating: number; totalReviews: number }>(
+      `/api/reviews?sellerId=${sellerId}`,
+    ),
 };
 
 // ─── Reports (admin) ──────────────────────────────────────────────────────────
@@ -271,6 +306,7 @@ export interface ApiUser {
   id: string;
   email: string;
   fullName: string;
+  avatarUrl?: string;
   role: "BUYER" | "SELLER" | "ADMIN";
   walletBalance: string;
   isVerified: boolean;
@@ -285,8 +321,12 @@ export interface ApiItem {
   price: string;
   description: string;
   imageUrl?: string;
+  displayPrice?: number;
+  serviceFee?: number;
+  savedCount?: number;
+  isSaved?: boolean;
   sellerId: string;
-  seller?: { id: string; fullName: string };
+  seller?: { id: string; fullName: string; avatarUrl?: string };
   status: string;
   slotId?: string;
   slot?: { slotId: string; status: string };
@@ -296,14 +336,25 @@ export interface ApiItem {
   updatedAt: string;
 }
 
+export interface ApiReview {
+  id: string;
+  orderId: string;
+  reviewerId: string;
+  reviewer?: { id: string; fullName: string; avatarUrl?: string };
+  sellerId: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+}
+
 export interface ApiOrder {
   id: string;
   itemId: string;
   item?: ApiItem;
   buyerId: string;
-  buyer?: { id: string; fullName: string; email: string };
+  buyer?: { id: string; fullName: string; email: string; avatarUrl?: string };
   sellerId: string;
-  seller?: { id: string; fullName: string; email: string };
+  seller?: { id: string; fullName: string; email: string; avatarUrl?: string };
   amount: string;
   status: string;
   slotId: string;
@@ -311,6 +362,7 @@ export interface ApiOrder {
   holdEndsAt: string;
   createdAt: string;
   refund?: ApiRefund;
+  review?: ApiReview;
   events?: ApiOrderEvent[];
 }
 

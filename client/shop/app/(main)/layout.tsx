@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 
 import { useAuth } from "@/contexts/auth-context";
 import { shopNav } from "@/config/navigation";
+import { BecomeSellerBanner } from "@/components/unithrift/become-seller-banner";
 
 const ICONS_OUTLINE: Record<string, React.ReactNode> = {
   grid: (
@@ -99,6 +100,11 @@ const ICONS_FILLED: Record<string, React.ReactNode> = {
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useAuth();
+  // Hide "Sell" tab from BUYER role — only SELLER and ADMIN can see it
+  const visibleNav = shopNav.filter((item) => {
+    if (item.href === "/sell") return user?.role === "SELLER" || user?.role === "ADMIN";
+    return true;
+  });
 
   return (
     <div className="min-h-screen pb-[58px]">
@@ -140,10 +146,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         {children}
       </motion.main>
 
-      {/* Bottom navigation — 6 tabs */}
+      {/* Become a Seller banner — shows once per session for BUYER users */}
+      <BecomeSellerBanner />
+
+      {/* Bottom navigation */}
       <nav className="bottom-nav">
         <div className="mx-auto flex max-w-2xl items-center justify-around px-0.5 py-1">
-          {shopNav.map((item) => {
+          {visibleNav.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
               <NextLink

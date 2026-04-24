@@ -1,41 +1,54 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import NextLink from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@heroui/input";
 import { Skeleton } from "@heroui/skeleton";
 
+import { useAuth } from "@/contexts/auth-context";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { itemsApi, type ApiItem } from "@/lib/api-client";
+import { itemsApi, wishlistApi, type ApiItem } from "@/lib/api-client";
 import { categories } from "@/lib/unithrift-mocks";
 import { peso } from "@/lib/unithrift-format";
+import { notifyError } from "@/lib/unithrift-toast";
 
 const CATEGORY_META: Record<string, { emoji: string; color: string }> = {
-  Clothing:      { emoji: "👗", color: "bg-pink-100 text-pink-700" },
-  Electronics:   { emoji: "📱", color: "bg-blue-100 text-blue-700" },
-  Books:         { emoji: "📚", color: "bg-amber-100 text-amber-700" },
-  Accessories:   { emoji: "👜", color: "bg-purple-100 text-purple-700" },
-  "School Supplies": { emoji: "✏️", color: "bg-green-100 text-green-700" },
-  Sports:        { emoji: "⚽", color: "bg-cyan-100 text-cyan-700" },
-  Food:          { emoji: "🍱", color: "bg-orange-100 text-orange-700" },
-  Other:         { emoji: "📦", color: "bg-gray-100 text-gray-600" },
+  Clothing:          { emoji: "👗", color: "bg-pink-100 text-pink-700" },
+  Electronics:       { emoji: "📱", color: "bg-blue-100 text-blue-700" },
+  Books:             { emoji: "📚", color: "bg-amber-100 text-amber-700" },
+  Accessories:       { emoji: "👜", color: "bg-purple-100 text-purple-700" },
+  "School Supplies": { emoji: "✏️",  color: "bg-green-100 text-green-700" },
+  Sports:            { emoji: "⚽", color: "bg-cyan-100 text-cyan-700" },
+  Food:              { emoji: "🍱", color: "bg-orange-100 text-orange-700" },
+  Other:             { emoji: "📦", color: "bg-gray-100 text-gray-600" },
 };
 
 const CONDITION_COLOR: Record<string, string> = {
-  "Like New": "bg-brand-green-100 text-brand-green-700",
-  "Good":     "bg-brand-gold-100 text-brand-gold-700",
-  "Fair":     "bg-brand-primary-100 text-brand-primary-700",
-  "Poor":     "bg-status-danger-100 text-status-danger-600",
+  NEW:       "bg-brand-green-100 text-brand-green-700",
+  LIKE_NEW:  "bg-brand-teal-100 text-brand-teal-700",
+  GOOD:      "bg-brand-gold-100 text-brand-gold-700",
+  FAIR:      "bg-brand-primary-100 text-brand-primary-700",
 };
+
+const CONDITION_LABEL: Record<string, string> = {
+  NEW: "New", LIKE_NEW: "Like New", GOOD: "Good", FAIR: "Fair",
+};
+
+type SortKey = "newest" | "price_asc" | "price_desc";
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "newest",     label: "Newest" },
+  { key: "price_asc",  label: "Price ↑" },
+  { key: "price_desc", label: "Price ↓" },
+];
 
 const gridVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } },
+  visible: { transition: { staggerChildren: 0.04 } },
 };
 const cardVariants = {
-  hidden: { opacity: 0, y: 16, scale: 0.97 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.24, ease: [0.25, 0.1, 0.25, 1] } },
+  hidden:   { opacity: 0, y: 14, scale: 0.97 },
+  visible:  { opacity: 1, y: 0,  scale: 1, transition: { duration: 0.22, ease: [0.25, 0.1, 0.25, 1] } },
 };
 
 function ProductSkeleton() {
@@ -51,19 +64,85 @@ function ProductSkeleton() {
   );
 }
 
+function HeartButton({
+  itemId,
+  initialSaved,
+  initialCount,
+  onToggle,
+}: {
+  itemId: string;
+  initialSaved: boolean;
+  initialCount: number;
+  onToggle?: (saved: boolean) => void;
+}) {
+  const { user } = useAuth();
+  const [saved, setSaved]   = useState(initialSaved);
+  const [count, setCount]   = useState(initialCount);
+  const [busy, setBusy]     = useState(false);
+
+  const toggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) { notifyError({ title: "Login required", description: "Sign in to save items." }); return; }
+    if (busy) return;
+    setBusy(true);
+    const next = !saved;
+    setSaved(next);
+    setCount((c) => next ? c + 1 : Math.max(0, c - 1));
+    try {
+      await wishlistApi.toggle(itemId);
+      onToggle?.(next);
+    } catch {
+      setSaved(!next);
+      setCount((c) => !next ? c + 1 : Math.max(0, c - 1));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <button
+      className="absolute right-2 top-2 flex items-center gap-0.5 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold shadow-sm backdrop-blur-sm transition-all duration-150 active:scale-90"
+      onClick={toggle}
+    >
+      <motion.span
+        animate={{ scale: saved ? [1, 1.35, 1] : 1 }}
+        transition={{ duration: 0.25 }}
+        className={saved ? "text-red-500" : "text-gray-400"}
+        style={{ lineHeight: 1 }}
+      >
+        {saved ? "♥" : "♡"}
+      </motion.span>
+      {count > 0 && <span className="text-text-2">{count}</span>}
+    </button>
+  );
+}
+
+// Store recently viewed in localStorage
+function recordRecentlyViewed(item: ApiItem) {
+  try {
+    const raw = localStorage.getItem("ut_recent") ?? "[]";
+    const ids: string[] = JSON.parse(raw);
+    const next = [item.id, ...ids.filter((id) => id !== item.id)].slice(0, 10);
+    localStorage.setItem("ut_recent", JSON.stringify(next));
+  } catch { /* ignore */ }
+}
+
 export default function BrowsePage() {
   const [category, setCategory] = useState("all");
-  const [query, setQuery] = useState("");
-  const [items, setItems] = useState<ApiItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sort, setSort]         = useState<SortKey>("newest");
+  const [query, setQuery]       = useState("");
+  const [items, setItems]       = useState<ApiItem[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const debouncedQuery = useDebouncedValue(query, 300);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = {};
+      const params: Record<string, string> = { sortBy: sort };
       if (category !== "all") params.category = category;
-      if (debouncedQuery) params.q = debouncedQuery;
+      if (debouncedQuery) params.search = debouncedQuery;
       const res = await itemsApi.browse(params);
       setItems(res.items);
     } catch {
@@ -71,7 +150,7 @@ export default function BrowsePage() {
     } finally {
       setLoading(false);
     }
-  }, [category, debouncedQuery]);
+  }, [category, sort, debouncedQuery]);
 
   useEffect(() => {
     fetchItems();
@@ -86,31 +165,30 @@ export default function BrowsePage() {
         transition={{ duration: 0.26 }}
         className="hero-gradient relative overflow-hidden rounded-2xl px-5 py-5 text-white shadow-md"
       >
-        {/* Subtle bokeh blobs */}
         <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-4 right-12 h-16 w-16 rounded-full bg-brand-gold-400/20 blur-xl" />
-
         <div className="relative">
           <p className="text-[11px] font-semibold uppercase tracking-[0.15em] opacity-80">
             Student Marketplace · UCLM
           </p>
-          <h1 className="mt-0.5 text-2xl font-extrabold leading-tight">
-            Find a Deal
-          </h1>
+          <h1 className="mt-0.5 text-2xl font-extrabold leading-tight">Find a Deal</h1>
           <p className="mt-1 text-sm opacity-90">
             Second-hand items — priced by students, for students
           </p>
         </div>
-        <span className="pointer-events-none absolute bottom-3 right-5 text-5xl opacity-80 select-none">
-          🛍️
-        </span>
+        <span className="pointer-events-none absolute bottom-3 right-5 select-none text-5xl opacity-80">🛍️</span>
       </motion.div>
 
-      {/* Search */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.06 }}>
+      {/* Search + filter toggle */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.06 }}
+        className="flex gap-2"
+      >
         <Input
           classNames={{
-            inputWrapper: "bg-surface-bg-1 border border-border-strong shadow-sm hover:border-brand-primary-400 transition-colors",
+            inputWrapper: "bg-surface-bg-1 border border-border-strong shadow-sm hover:border-brand-primary-400 transition-colors flex-1",
             input: "text-text-1 placeholder:text-text-4",
           }}
           placeholder="Search items…"
@@ -122,7 +200,34 @@ export default function BrowsePage() {
           value={query}
           onValueChange={setQuery}
         />
+        <button
+          className={`flex h-10 items-center gap-1.5 rounded-xl border px-3 text-sm font-medium transition-all ${showFilters ? "border-brand-primary-500 bg-brand-primary-50 text-brand-primary-600" : "border-border-strong bg-surface-bg-1 text-text-2"}`}
+          onClick={() => setShowFilters((v) => !v)}
+        >
+          <svg fill="none" height="14" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="14">
+            <line x1="4" x2="20" y1="6" y2="6" /><line x1="8" x2="16" y1="12" y2="12" /><line x1="12" x2="12" y1="18" y2="18" />
+          </svg>
+          Filter
+        </button>
       </motion.div>
+
+      {/* Sort strip (always visible) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
+        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-text-4">Sort:</span>
+        {SORT_OPTIONS.map((opt) => (
+          <button
+            key={opt.key}
+            onClick={() => setSort(opt.key)}
+            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+              sort === opt.key
+                ? "border-brand-primary-600 bg-brand-primary-600 text-white"
+                : "border-border-strong bg-surface-bg-1 text-text-2 hover:border-brand-primary-400"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
 
       {/* Category pills */}
       <motion.div
@@ -164,11 +269,7 @@ export default function BrowsePage() {
 
       {/* Count */}
       {!loading && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-xs text-text-4"
-        >
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-text-4">
           {items.length} item{items.length !== 1 ? "s" : ""} found
         </motion.p>
       )}
@@ -176,9 +277,7 @@ export default function BrowsePage() {
       {/* Product grid */}
       {loading ? (
         <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <ProductSkeleton key={i} />
-          ))}
+          {Array.from({ length: 6 }).map((_, i) => <ProductSkeleton key={i} />)}
         </div>
       ) : items.length === 0 ? (
         <motion.div
@@ -199,7 +298,11 @@ export default function BrowsePage() {
         >
           {items.map((item) => (
             <motion.div key={item.id} variants={cardVariants}>
-              <NextLink className="product-card block" href={`/item/${item.id}`}>
+              <NextLink
+                className="block"
+                href={`/item/${item.id}`}
+                onClick={() => recordRecentlyViewed(item)}
+              >
                 <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-bg-1 shadow-sm">
                   {/* Image */}
                   <div className="relative aspect-square w-full overflow-hidden bg-surface-bg-3">
@@ -207,11 +310,7 @@ export default function BrowsePage() {
                       <img
                         alt={item.title}
                         className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                        src={
-                          item.imageUrl?.startsWith("http")
-                            ? item.imageUrl
-                            : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`
-                        }
+                        src={item.imageUrl.startsWith("http") ? item.imageUrl : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-primary-100 to-brand-gold-50 text-4xl">
@@ -220,8 +319,14 @@ export default function BrowsePage() {
                     )}
                     {/* Condition badge */}
                     <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-semibold backdrop-blur-sm ${CONDITION_COLOR[item.condition ?? ""] ?? "bg-black/40 text-white"}`}>
-                      {item.condition}
+                      {CONDITION_LABEL[item.condition ?? ""] ?? item.condition}
                     </span>
+                    {/* Heart/save button */}
+                    <HeartButton
+                      itemId={item.id}
+                      initialSaved={item.isSaved ?? false}
+                      initialCount={item.savedCount ?? 0}
+                    />
                   </div>
 
                   {/* Info */}
@@ -230,18 +335,14 @@ export default function BrowsePage() {
                       {item.title}
                     </p>
                     {item.seller?.fullName && (
-                      <p className="mt-0.5 truncate text-[11px] text-text-4">
-                        {item.seller.fullName}
-                      </p>
+                      <p className="mt-0.5 truncate text-[11px] text-text-4">{item.seller.fullName}</p>
                     )}
                     <div className="mt-2 flex items-center justify-between">
                       <p className="text-base font-extrabold text-brand-primary-600">
                         {peso(Number(item.displayPrice ?? item.price))}
                       </p>
-                      {item.displayPrice && item.displayPrice !== item.price && (
-                        <p className="text-[10px] text-text-4 line-through">
-                          {peso(Number(item.price))}
-                        </p>
+                      {item.displayPrice && item.displayPrice !== Number(item.price) && (
+                        <p className="text-[10px] text-text-4 line-through">{peso(Number(item.price))}</p>
                       )}
                     </div>
                   </div>

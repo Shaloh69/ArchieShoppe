@@ -23,6 +23,8 @@ import userRoutes from './routes/users';
 import reportRoutes from './routes/reports';
 import webhookRoutes from './routes/webhooks';
 import configRoutes from './routes/config';
+import wishlistRoutes from './routes/wishlist';
+import reviewRoutes from './routes/reviews';
 
 const app = express();
 
@@ -81,6 +83,8 @@ app.use('/api/refunds', refundRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Health check (for UptimeRobot + Python warm-up)
 app.get('/api/health', (_req, res) => {

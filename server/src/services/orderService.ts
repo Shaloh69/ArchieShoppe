@@ -140,8 +140,10 @@ export async function getOrdersByBuyer(buyerId: string, page = 1, limit = 20) {
       take: limit,
       include: {
         item: { select: { id: true, title: true, imageUrl: true, category: true } },
-        seller: { select: { id: true, fullName: true } },
+        seller: { select: { id: true, fullName: true, avatarUrl: true } },
         refund: true,
+        review: { select: { id: true, rating: true, comment: true, createdAt: true } },
+        events: { orderBy: { createdAt: 'asc' } },
       },
     }),
   ]);
@@ -159,8 +161,9 @@ export async function getOrdersBySeller(sellerId: string, page = 1, limit = 20) 
       take: limit,
       include: {
         item: { select: { id: true, title: true, imageUrl: true } },
-        buyer: { select: { id: true, fullName: true } },
+        buyer: { select: { id: true, fullName: true, avatarUrl: true } },
         refund: true,
+        events: { orderBy: { createdAt: 'asc' } },
       },
     }),
   ]);

@@ -43,7 +43,7 @@ export const browseSchema = z.object({
   sortBy: z.enum(['price_asc', 'price_desc', 'newest']).default('newest'),
 });
 
-export async function browseItems(query: z.infer<typeof browseSchema>) {
+export async function browseItems(query: z.infer<typeof browseSchema>, userId?: string) {
   const { page, limit, category, condition, minPrice, maxPrice, search, sortBy } = query;
   const skip = (page - 1) * limit;
 
@@ -74,28 +74,61 @@ export async function browseItems(query: z.infer<typeof browseSchema>) {
       skip,
       take: limit,
       include: {
-        seller: { select: { id: true, fullName: true } },
+        seller: { select: { id: true, fullName: true, avatarUrl: true } },
         slot: { select: { slotId: true, status: true } },
+        _count: { select: { wishlist: true } },
       },
     }),
     getPlatformFeeRate(),
   ]);
 
-  return { total, page, limit, items: raw.map((item) => withDisplayPrice(item, feeRate)) };
+  let savedSet = new Set<string>();
+  if (userId) {
+    const saved = await prisma.wishlist.findMany({
+      where: { userId, itemId: { in: raw.map((i) => i.id) } },
+      select: { itemId: true },
+    });
+    savedSet = new Set(saved.map((s) => s.itemId));
+  }
+
+  return {
+    total, page, limit,
+    items: raw.map((item) => ({
+      ...withDisplayPrice(item, feeRate),
+      savedCount: item._count.wishlist,
+      isSaved: savedSet.has(item.id),
+    })),
+  };
 }
 
-export async function getItemById(itemId: string) {
-  const item = await prisma.item.findUnique({
-    where: { id: itemId },
-    include: {
-      seller: { select: { id: true, fullName: true } },
-      slot: { select: { slotId: true, status: true } },
-      subscriptionPlan: true,
-    },
-  });
+export async function getItemById(itemId: string, userId?: string) {
+  const [item, feeRate] = await Promise.all([
+    prisma.item.findUnique({
+      where: { id: itemId },
+      include: {
+        seller: { select: { id: true, fullName: true, avatarUrl: true } },
+        slot: { select: { slotId: true, status: true } },
+        subscriptionPlan: true,
+        _count: { select: { wishlist: true } },
+      },
+    }),
+    getPlatformFeeRate(),
+  ]);
   if (!item) throw Object.assign(new Error('Item not found'), { status: 404 });
-  const feeRate = await getPlatformFeeRate();
-  return withDisplayPrice(item, feeRate);
+
+  let isSaved = false;
+  if (userId) {
+    const entry = await prisma.wishlist.findUnique({
+      where: { userId_itemId: { userId, itemId } },
+    });
+    isSaved = !!entry;
+  }
+
+  return {
+    ...withDisplayPrice(item, feeRate),
+    savedCount: item._count.wishlist,
+    isSaved,
+  };
 }
 
 export async function createItem(

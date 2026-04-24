@@ -1,9 +1,10 @@
-import { Router, Response } from 'express';
+import { Router, Response, Request } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { adminOnly } from '../middleware/adminOnly';
 import { upload, uploadToSupabase } from '../utils/upload';
 import * as itemService from '../services/itemService';
 import { sendCommandToEsp } from '../ws/espHandler';
+import { verifyAccessToken } from '../utils/jwt';
 
 const router = Router();
 
@@ -27,13 +28,22 @@ router.post('/verify-seller-code', async (req, res: Response) => {
   res.json({ item });
 });
 
-router.get('/', async (req, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   const parsed = itemService.browseSchema.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ message: 'Invalid query', errors: parsed.error.flatten().fieldErrors });
     return;
   }
-  const result = await itemService.browseItems(parsed.data);
+  // Optionally decode token to pass userId for isSaved — not required
+  let userId: string | undefined;
+  try {
+    const header = req.headers.authorization;
+    if (header?.startsWith('Bearer ')) {
+      const payload = verifyAccessToken(header.slice(7));
+      userId = payload.userId;
+    }
+  } catch { /* ignore */ }
+  const result = await itemService.browseItems(parsed.data, userId);
   res.json(result);
 });
 
@@ -52,8 +62,16 @@ router.get('/my/listings', authenticate, async (req: AuthRequest, res: Response)
   res.json(result);
 });
 
-router.get('/:id', async (req, res: Response) => {
-  const item = await itemService.getItemById(req.params.id);
+router.get('/:id', async (req: Request, res: Response) => {
+  let userId: string | undefined;
+  try {
+    const header = req.headers.authorization;
+    if (header?.startsWith('Bearer ')) {
+      const payload = verifyAccessToken(header.slice(7));
+      userId = payload.userId;
+    }
+  } catch { /* ignore */ }
+  const item = await itemService.getItemById(req.params.id, userId);
   res.json({ item });
 });
 
