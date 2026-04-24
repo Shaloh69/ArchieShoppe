@@ -12,9 +12,17 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    /* eslint-disable no-console */
     console.error(error);
+    // Stale JS chunk after a new deployment — hard reload once to fetch fresh bundle
+    if (error.name === "ChunkLoadError" || error.message?.includes("Loading chunk")) {
+      const reloaded = sessionStorage.getItem("chunk_reload");
+      if (!reloaded) {
+        sessionStorage.setItem("chunk_reload", "1");
+        window.location.reload();
+      }
+    } else {
+      sessionStorage.removeItem("chunk_reload");
+    }
   }, [error]);
 
   return (
