@@ -28,7 +28,7 @@ router.post('/login', async (req: Request, res: Response) => {
   res.cookie('refreshToken', result.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/api/auth/refresh',
   });
@@ -45,7 +45,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
   res.cookie('refreshToken', result.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/api/auth/refresh',
   });
@@ -55,7 +55,11 @@ router.post('/refresh', async (req: Request, res: Response) => {
 router.post('/logout', async (req: Request, res: Response) => {
   const token: string | undefined = req.cookies?.refreshToken;
   if (token) await authService.logout(token);
-  res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+  res.clearCookie('refreshToken', {
+    path: '/api/auth/refresh',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
   res.json({ message: 'Logged out' });
 });
 
