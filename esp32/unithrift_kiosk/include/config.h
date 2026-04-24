@@ -65,4 +65,4 @@
 #define HEARTBEAT_INTERVAL_MS 15000
 
 // ─── Reconnect delay ──────────────────────────────────────────────────────────
-#define WS_RECONNECT_DELAY_MS 5000
+#define WS_RECONNECT_DELAY_MS 10000  // 10 s — SSL handshake needs breathing room

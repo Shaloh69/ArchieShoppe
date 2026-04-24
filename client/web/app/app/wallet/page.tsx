@@ -130,7 +130,7 @@ function QrPhSection({ onPaid }: { onPaid: () => void }) {
     <div className="space-y-4">
       <p className="text-sm text-text-2">
         Generate a dynamic QR code for InstaPay / PESONet. Scan with any banking app.
-        QR expires after 5 minutes.
+        QR expires after 30 minutes.
       </p>
 
       {!qrData && !paid && (
@@ -448,10 +448,10 @@ export default function WalletPage() {
             </Tab>
 
             {/* Checkout (GCash / Card) Tab */}
-            <Tab key="checkout" title="GCash / Card / Maya">
+            <Tab key="checkout" title="Card">
               <div className="mt-4 space-y-4">
                 <p className="text-sm text-text-2">
-                  Pay via GCash, credit/debit card, or Maya through a PayMongo checkout page.
+                  Pay via credit/debit card through a secure PayMongo checkout page.
                 </p>
                 <div className="flex items-end gap-3">
                   <Input
@@ -468,7 +468,7 @@ export default function WalletPage() {
                     Top-up
                   </Button>
                 </div>
-                <p className="text-xs text-text-3">Powered by PayMongo. Min ₱100 · Max ₱10,000.</p>
+                <p className="text-xs text-text-3">Powered by PayMongo. Credit/debit card only. Min ₱100 · Max ₱10,000.</p>
               </div>
             </Tab>
 

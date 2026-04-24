@@ -9,7 +9,7 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 import { log } from './utils/logger';
-import { runMigrations, runSeed, warmPythonServer } from './startup';
+import { runMigrations, runSeed, warmPythonServer, startKeepAlivePing } from './startup';
 import { initWebSocketServer } from './ws/wsServer';
 import { startHoldReleaseCron } from './cron/holdRelease';
 import { startSubscriptionExpiryCron } from './cron/subscriptionExpiry';
@@ -122,6 +122,7 @@ async function bootstrap() {
     await warmPythonServer(env.PYTHON_SERVER_URL);
     startHoldReleaseCron();
     startSubscriptionExpiryCron();
+    startKeepAlivePing(`https://unithrift-api.onrender.com`);
 
     server.listen(env.PORT, () => {
       log.sys.ok(`UniThrift API listening on port ${env.PORT}  env=${env.NODE_ENV}`);

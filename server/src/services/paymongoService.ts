@@ -51,7 +51,7 @@ export async function createTopUpSession(userId: string, data: z.infer<typeof to
         amount: amountInCentavos,
         currency: 'PHP',
         description: `UniThrift Wallet Top-up ₱${amountInPesos}`,
-        payment_method_types: ['gcash', 'card', 'paymaya'],
+        payment_method_types: ['card'],  // gcash/paymaya require PayMongo wallet upgrade
         success_url: data.successUrl,
         cancel_url: data.cancelUrl,
         metadata: { userId },
@@ -86,6 +86,13 @@ export const qrPhSchema = z.object({
 export async function createQrPhSource(userId: string, amountInCentavos: number) {
   const amountInPesos = amountInCentavos / 100;
 
+  // QRPh Sources API requires billing.name and billing.email
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { fullName: true, email: true },
+  });
+  if (!user) throw Object.assign(new Error('User not found'), { status: 404 });
+
   const response = await paymongoClient.post('/sources', {
     data: {
       attributes: {
@@ -95,6 +102,10 @@ export async function createQrPhSource(userId: string, amountInCentavos: number)
         redirect: {
           success: `${env.CLIENT_URL.split(',')[0].trim()}/app/wallet?topup=success`,
           failed: `${env.CLIENT_URL.split(',')[0].trim()}/app/wallet?topup=failed`,
+        },
+        billing: {
+          name: user.fullName,
+          email: user.email,
         },
       },
     },
