@@ -29,6 +29,8 @@
 #include <WiFi.h>
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
+#include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include "config.h"
 #include "led_status.h"
 #include "relay_control.h"
@@ -115,6 +117,24 @@ static void wifiConnect() {
                 WiFi.SSID().c_str());
 }
 
+// ─── Server reachability check ───────────────────────────────────────────────
+// Fires an HTTPS GET to /api/health before WebSocket — tells us exactly whether
+// the problem is DNS / TCP / SSL or WebSocket-specific.
+static void checkServerReachability() {
+  WiFiClientSecure ssl;
+  ssl.setInsecure();
+  HTTPClient http;
+  http.begin(ssl, "https://" WS_HOST "/api/health");
+  http.setTimeout(15000);
+  int code = http.GET();
+  if (code > 0) {
+    Serial.printf("[http] Server reachable — HTTP %d: %s\n", code, http.getString().c_str());
+  } else {
+    Serial.printf("[http] Server NOT reachable — error %d (%s)\n", code, http.errorToString(code).c_str());
+  }
+  http.end();
+}
+
 // ─── Status report ────────────────────────────────────────────────────────────
 static void sendStatusReport() {
   JsonDocument doc;
@@ -177,6 +197,9 @@ void setup() {
   wifiConnect();
 
   wsInit();
+
+  // Diagnostic: verify HTTPS reachability before WebSocket attempt
+  checkServerReachability();
 
   Serial.println("[boot] Connecting to WebSocket server...");
   if (wsConnect()) {

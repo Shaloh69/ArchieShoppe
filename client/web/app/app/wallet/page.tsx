@@ -157,7 +157,13 @@ function QrPhSection({ onPaid }: { onPaid: () => void }) {
             Scan to pay <span className="font-bold text-text-1">{peso(Number(amount))}</span>
           </p>
           <div className="rounded-lg bg-white p-2 shadow-sm">
-            <QRCode value={qrData} size={192} />
+            {qrData.startsWith("data:") ? (
+              // PayMongo returned a pre-rendered base64 PNG
+              <img src={qrData} alt="QR code" width={192} height={192} />
+            ) : (
+              // PayMongo returned a raw QR payload string — render it
+              <QRCode value={qrData} size={192} />
+            )}
           </div>
           {expiresAt && (
             <p className="text-xs text-text-3">

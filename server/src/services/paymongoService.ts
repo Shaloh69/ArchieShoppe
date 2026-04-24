@@ -133,12 +133,26 @@ export async function createQrPhSource(userId: string, amountInCentavos: number)
     },
   });
   const attached = attachRes.data.data;
-  const nextAction = attached.attributes.next_action;
+  const attrs = attached.attributes;
+  const nextAction = attrs.next_action;
 
-  // QR code lives in next_action.qr_code.image_data (base64 PNG)
-  // or next_action.qr_code.qr_code_string (raw QR payload)
-  const qrImageData: string | null = nextAction?.qr_code?.image_data ?? null;
-  const qrString: string | null = nextAction?.qr_code?.qr_code_string ?? null;
+  // Log full next_action so we can see the real PayMongo field names
+  log.sys.info('QRPh attach next_action: ' + JSON.stringify(nextAction));
+
+  // PayMongo QRPh next_action field names vary — try every known location.
+  const na = nextAction ?? {};
+  const qrImageData: string | null =
+    na?.qr_code?.image_data ??          // documented
+    na?.qrph_scan?.qr_image ??          // older API variant
+    na?.display_details?.qr_image ??    // display_details wrapper
+    na?.qr_image ??                     // flat
+    null;
+  const qrString: string | null =
+    na?.qr_code?.qr_code_string ??
+    na?.qrph_scan?.qr_string ??
+    na?.display_details?.qr_string ??
+    na?.qr_string ??
+    null;
 
   // Store the PaymentIntent ID in checkoutSessionId for webhook matching
   await prisma.paymongoPayment.create({
