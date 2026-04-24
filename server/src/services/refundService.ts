@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { RefundStatus, OrderStatus } from '@prisma/client';
 import { prisma } from '../config/db';
 import { createAuditLog } from '../utils/audit';
 import { creditWallet } from './walletService';
@@ -87,7 +88,7 @@ export async function processRefund(
   await prisma.refund.update({
     where: { id: refundId },
     data: {
-      status: newStatus as never,
+      status: newStatus as RefundStatus,
       adminNotes,
       classificationResult: (classificationResult as object) ?? undefined,
       processedAt: new Date(),
@@ -122,7 +123,7 @@ export async function processRefund(
 
   await prisma.order.update({
     where: { id: refund.orderId },
-    data: { status: orderStatus as never },
+    data: { status: orderStatus as OrderStatus },
   });
 
   if (approved) {
@@ -136,7 +137,7 @@ export async function processRefund(
 }
 
 export async function getAllRefunds(page = 1, limit = 20, status?: string) {
-  const where = status ? { status: status as never } : {};
+  const where = status ? { status: status as RefundStatus } : {};
   const skip = (page - 1) * limit;
   const [total, refunds] = await Promise.all([
     prisma.refund.count({ where }),

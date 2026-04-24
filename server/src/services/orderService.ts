@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OrderStatus } from '@prisma/client';
 import { prisma } from '../config/db';
 import { generatePersonalCode } from '../utils/codeGenerator';
 import { createAuditLog } from '../utils/audit';
@@ -195,7 +196,7 @@ export async function getOrderById(orderId: string, userId: string) {
 }
 
 export async function getAllOrders(page = 1, limit = 20, status?: string) {
-  const where = status ? { status: status as never } : {};
+  const where = status ? { status: status as OrderStatus } : {};
   const skip = (page - 1) * limit;
   const [total, orders] = await Promise.all([
     prisma.order.count({ where }),

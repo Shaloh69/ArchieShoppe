@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ItemStatus } from '@prisma/client';
 import { prisma } from '../config/db';
 import { debitWallet } from './walletService';
 import { createAuditLog } from '../utils/audit';
@@ -302,7 +303,7 @@ export async function getMyListings(sellerId: string, page = 1, limit = 20) {
 }
 
 export async function getAllItems(page = 1, limit = 20, status?: string) {
-  const where = status ? { status: status as never } : {};
+  const where = status ? { status: status as ItemStatus } : {};
   const skip = (page - 1) * limit;
   const [total, items] = await Promise.all([
     prisma.item.count({ where }),
