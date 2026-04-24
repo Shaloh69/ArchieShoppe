@@ -19,11 +19,20 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html suppressHydrationWarning lang="en">
       <head />
-      <body className={clsx("min-h-screen bg-surface-bg-0 text-text-1 font-sans antialiased", fontSans.variable)}>
+      <body
+        className={clsx(
+          "min-h-screen bg-surface-bg-0 text-text-1 font-sans antialiased",
+          fontSans.variable,
+        )}
+      >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <KioskIdleGuard>
             <main className="min-h-screen bg-gradient-to-b from-surface-bg-0 via-surface-bg-1 to-surface-bg-2 px-3 py-4 sm:px-4 md:px-8 md:py-6">

@@ -60,17 +60,31 @@ export async function getLockerEvents(slotId: string, limit = 50) {
   });
 }
 
-export async function updateSubscriptionPlan(
-  id: string,
-  data: { price?: number; name?: string },
-) {
+export async function getCameraAssignments() {
+  const slots = await prisma.lockerSlot.findMany({
+    orderBy: { slotId: 'asc' },
+    select: { slotId: true, cameraIndex: true },
+  });
+  // Return as { slotId: cameraIndex } map for easy lookup
+  return Object.fromEntries(slots.map((s) => [s.slotId, s.cameraIndex]));
+}
+
+export async function updateCameraAssignment(slotId: string, cameraIndex: number | null) {
+  return prisma.lockerSlot.update({
+    where: { slotId },
+    data: { cameraIndex },
+    select: { slotId: true, cameraIndex: true },
+  });
+}
+
+export async function updateSubscriptionPlan(id: string, data: { price?: number; name?: string }) {
   const plan = await prisma.lockerSubscriptionPlan.findUnique({ where: { id } });
   if (!plan) throw Object.assign(new Error('Plan not found'), { status: 404 });
   return prisma.lockerSubscriptionPlan.update({
     where: { id },
     data: {
       ...(data.price !== undefined ? { price: data.price } : {}),
-      ...(data.name  !== undefined ? { name:  data.name  } : {}),
+      ...(data.name !== undefined ? { name: data.name } : {}),
     },
   });
 }

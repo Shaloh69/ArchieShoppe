@@ -98,19 +98,29 @@ router.get('/daily', authenticate, adminOnly, async (req: AuthRequest, res: Resp
   });
 
   type DayBucket = {
-    sales_count: number; sales_total: number;
-    commission_count: number; commission_total: number;
-    refund_count: number; refund_total: number;
-    payout_count: number; payout_total: number;
-    topup_count: number; topup_total: number;
+    sales_count: number;
+    sales_total: number;
+    commission_count: number;
+    commission_total: number;
+    refund_count: number;
+    refund_total: number;
+    payout_count: number;
+    payout_total: number;
+    topup_count: number;
+    topup_total: number;
   };
 
   const empty = (): DayBucket => ({
-    sales_count: 0, sales_total: 0,
-    commission_count: 0, commission_total: 0,
-    refund_count: 0, refund_total: 0,
-    payout_count: 0, payout_total: 0,
-    topup_count: 0, topup_total: 0,
+    sales_count: 0,
+    sales_total: 0,
+    commission_count: 0,
+    commission_total: 0,
+    refund_count: 0,
+    refund_total: 0,
+    payout_count: 0,
+    payout_total: 0,
+    topup_count: 0,
+    topup_total: 0,
   });
 
   const byDay: Record<string, DayBucket> = {};
@@ -120,12 +130,27 @@ router.get('/daily', authenticate, adminOnly, async (req: AuthRequest, res: Resp
     if (!byDay[day]) byDay[day] = empty();
     const amt = t.amount.toNumber();
     switch (t.type) {
-      case 'PURCHASE':      byDay[day].sales_count++;      byDay[day].sales_total      += amt; break;
-      case 'COMMISSION':    byDay[day].commission_count++; byDay[day].commission_total += amt; break;
+      case 'PURCHASE':
+        byDay[day].sales_count++;
+        byDay[day].sales_total += amt;
+        break;
+      case 'COMMISSION':
+        byDay[day].commission_count++;
+        byDay[day].commission_total += amt;
+        break;
       case 'REFUND':
-      case 'PARTIAL_REFUND':byDay[day].refund_count++;     byDay[day].refund_total     += amt; break;
-      case 'SELLER_PAYOUT': byDay[day].payout_count++;     byDay[day].payout_total     += amt; break;
-      case 'TOP_UP':        byDay[day].topup_count++;      byDay[day].topup_total      += amt; break;
+      case 'PARTIAL_REFUND':
+        byDay[day].refund_count++;
+        byDay[day].refund_total += amt;
+        break;
+      case 'SELLER_PAYOUT':
+        byDay[day].payout_count++;
+        byDay[day].payout_total += amt;
+        break;
+      case 'TOP_UP':
+        byDay[day].topup_count++;
+        byDay[day].topup_total += amt;
+        break;
     }
   }
 

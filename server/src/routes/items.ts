@@ -42,7 +42,9 @@ router.get('/', async (req: Request, res: Response) => {
       const payload = verifyAccessToken(header.slice(7));
       userId = payload.userId;
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   const result = await itemService.browseItems(parsed.data, userId);
   res.json(result);
 });
@@ -70,7 +72,9 @@ router.get('/:id', async (req: Request, res: Response) => {
       const payload = verifyAccessToken(header.slice(7));
       userId = payload.userId;
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   const item = await itemService.getItemById(req.params.id, userId);
   res.json({ item });
 });

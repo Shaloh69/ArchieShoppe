@@ -1,5 +1,5 @@
 import { WebSocket } from 'ws';
-import { espConnections, adminConnections } from './wsState';
+import { espConnections, adminConnections, cameraConnection } from './wsState';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function broadcastToAdmins(payload: Record<string, any>): void {
@@ -17,4 +17,11 @@ export function broadcastToEsp(deviceId: string, payload: Record<string, any>): 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(payload));
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function sendToCameraServer(payload: Record<string, any>): boolean {
+  if (!cameraConnection || cameraConnection.readyState !== WebSocket.OPEN) return false;
+  cameraConnection.send(JSON.stringify(payload));
+  return true;
 }

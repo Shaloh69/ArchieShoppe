@@ -23,6 +23,8 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().url().default('https://placeholder.supabase.co'),
   SUPABASE_SERVICE_KEY: z.string().default('placeholder'),
   SUPABASE_BUCKET: z.string().default('unithriftMedia'),
+  // Shared secret for the camera laptop WebSocket connection
+  CAMERA_WS_SECRET: z.string().default('camera-dev-secret'),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -12,7 +12,10 @@ export function getAccessToken() {
 
 type FetchOptions = RequestInit & { skipAuth?: boolean };
 
-async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
+async function apiFetch<T>(
+  path: string,
+  options: FetchOptions = {},
+): Promise<T> {
   const { skipAuth, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
@@ -46,8 +49,12 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
       });
 
       if (!retry.ok) {
-        const err = await retry.json().catch(() => ({ message: "Request failed" }));
-        throw Object.assign(new Error(err.message ?? "Request failed"), { status: retry.status });
+        const err = await retry
+          .json()
+          .catch(() => ({ message: "Request failed" }));
+        throw Object.assign(new Error(err.message ?? "Request failed"), {
+          status: retry.status,
+        });
       }
       return retry.json() as Promise<T>;
     }
@@ -85,7 +92,12 @@ async function silentRefresh(): Promise<boolean> {
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const authApi = {
-  register: (body: { email: string; password: string; fullName: string; role: string }) =>
+  register: (body: {
+    email: string;
+    password: string;
+    fullName: string;
+    role: string;
+  }) =>
     apiFetch<{ user: ApiUser }>("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(body),
@@ -99,11 +111,9 @@ export const authApi = {
       skipAuth: true,
     }),
 
-  logout: () =>
-    apiFetch<void>("/api/auth/logout", { method: "POST" }),
+  logout: () => apiFetch<void>("/api/auth/logout", { method: "POST" }),
 
-  me: () =>
-    apiFetch<{ user: ApiUser }>("/api/auth/me"),
+  me: () => apiFetch<{ user: ApiUser }>("/api/auth/me"),
 };
 
 // ─── Items ────────────────────────────────────────────────────────────────────
@@ -113,8 +123,7 @@ export const itemsApi = {
     return apiFetch<{ total: number; items: ApiItem[] }>(`/api/items${qs}`);
   },
 
-  getById: (id: string) =>
-    apiFetch<{ item: ApiItem }>(`/api/items/${id}`),
+  getById: (id: string) => apiFetch<{ item: ApiItem }>(`/api/items/${id}`),
 
   // Kiosk sell flow — no auth required
   verifySellerCode: (code: string) =>
@@ -125,11 +134,15 @@ export const itemsApi = {
     }),
 
   subscriptionPlans: () =>
-    apiFetch<{ plans: ApiLockerPlan[] }>("/api/items/plans", { skipAuth: true }),
+    apiFetch<{ plans: ApiLockerPlan[] }>("/api/items/plans", {
+      skipAuth: true,
+    }),
 
   myListings: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; items: ApiItem[] }>(`/api/items/my/listings${qs}`);
+    return apiFetch<{ total: number; items: ApiItem[] }>(
+      `/api/items/my/listings${qs}`,
+    );
   },
 
   create: (form: FormData) =>
@@ -139,29 +152,38 @@ export const itemsApi = {
     }),
 
   activate: (id: string) =>
-    apiFetch<{ item: ApiItem }>(`/api/items/${id}/activate`, { method: "PATCH" }),
+    apiFetch<{ item: ApiItem }>(`/api/items/${id}/activate`, {
+      method: "PATCH",
+    }),
 
   remove: (id: string) =>
     apiFetch<{ item: ApiItem }>(`/api/items/${id}`, { method: "DELETE" }),
 
   adminAll: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; items: ApiItem[] }>(`/api/items/admin/all${qs}`);
+    return apiFetch<{ total: number; items: ApiItem[] }>(
+      `/api/items/admin/all${qs}`,
+    );
   },
 };
 
 // ─── Wallet ───────────────────────────────────────────────────────────────────
 export const walletApi = {
-  balance: () =>
-    apiFetch<{ balance: string }>("/api/wallet/balance"),
+  balance: () => apiFetch<{ balance: string }>("/api/wallet/balance"),
 
   transactions: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; transactions: ApiWalletTxn[] }>(`/api/wallet/transactions${qs}`);
+    return apiFetch<{ total: number; transactions: ApiWalletTxn[] }>(
+      `/api/wallet/transactions${qs}`,
+    );
   },
 
   topUp: (body: { amount: number; successUrl: string; cancelUrl: string }) =>
-    apiFetch<{ checkoutSessionId: string; checkoutUrl: string; amount: number }>("/api/wallet/top-up", {
+    apiFetch<{
+      checkoutSessionId: string;
+      checkoutUrl: string;
+      amount: number;
+    }>("/api/wallet/top-up", {
       method: "POST",
       body: JSON.stringify(body),
     }),
@@ -171,16 +193,19 @@ export const walletApi = {
 export const ordersApi = {
   myPurchases: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; orders: ApiOrder[] }>(`/api/orders/my/purchases${qs}`);
+    return apiFetch<{ total: number; orders: ApiOrder[] }>(
+      `/api/orders/my/purchases${qs}`,
+    );
   },
 
   mySales: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; orders: ApiOrder[] }>(`/api/orders/my/sales${qs}`);
+    return apiFetch<{ total: number; orders: ApiOrder[] }>(
+      `/api/orders/my/sales${qs}`,
+    );
   },
 
-  getById: (id: string) =>
-    apiFetch<{ order: ApiOrder }>(`/api/orders/${id}`),
+  getById: (id: string) => apiFetch<{ order: ApiOrder }>(`/api/orders/${id}`),
 
   create: (itemId: string) =>
     apiFetch<{ order: ApiOrder }>("/api/orders", {
@@ -190,20 +215,22 @@ export const ordersApi = {
 
   adminAll: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; orders: ApiOrder[] }>(`/api/orders/admin/all${qs}`);
+    return apiFetch<{ total: number; orders: ApiOrder[] }>(
+      `/api/orders/admin/all${qs}`,
+    );
   },
 
   complete: (id: string) =>
-    apiFetch<{ order: ApiOrder }>(`/api/orders/${id}/complete`, { method: "POST" }),
+    apiFetch<{ order: ApiOrder }>(`/api/orders/${id}/complete`, {
+      method: "POST",
+    }),
 };
 
 // ─── Lockers ──────────────────────────────────────────────────────────────────
 export const lockersApi = {
-  all: () =>
-    apiFetch<{ slots: ApiLockerSlot[] }>("/api/lockers"),
+  all: () => apiFetch<{ slots: ApiLockerSlot[] }>("/api/lockers"),
 
-  plans: () =>
-    apiFetch<{ plans: ApiLockerPlan[] }>("/api/lockers/plans"),
+  plans: () => apiFetch<{ plans: ApiLockerPlan[] }>("/api/lockers/plans"),
 
   getSlot: (slotId: string) =>
     apiFetch<{ slot: ApiLockerSlot }>(`/api/lockers/${slotId}`),
@@ -228,7 +255,9 @@ export const refundsApi = {
 
   adminAll: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; refunds: ApiRefund[] }>(`/api/refunds/admin/all${qs}`);
+    return apiFetch<{ total: number; refunds: ApiRefund[] }>(
+      `/api/refunds/admin/all${qs}`,
+    );
   },
 
   process: (id: string, body: { approved: boolean; adminNotes?: string }) =>
@@ -242,7 +271,9 @@ export const refundsApi = {
 export const usersApi = {
   adminAll: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; users: ApiUser[] }>(`/api/users/admin/all${qs}`);
+    return apiFetch<{ total: number; users: ApiUser[] }>(
+      `/api/users/admin/all${qs}`,
+    );
   },
 
   getById: (id: string) =>
@@ -263,17 +294,20 @@ export const usersApi = {
 
 // ─── Reports (admin) ──────────────────────────────────────────────────────────
 export const reportsApi = {
-  overview: () =>
-    apiFetch<{ overview: ApiOverview }>("/api/reports/overview"),
+  overview: () => apiFetch<{ overview: ApiOverview }>("/api/reports/overview"),
 
   transactions: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; transactions: ApiWalletTxn[] }>(`/api/reports/transactions${qs}`);
+    return apiFetch<{ total: number; transactions: ApiWalletTxn[] }>(
+      `/api/reports/transactions${qs}`,
+    );
   },
 
   auditLogs: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return apiFetch<{ total: number; logs: ApiAuditLog[] }>(`/api/reports/audit-logs${qs}`);
+    return apiFetch<{ total: number; logs: ApiAuditLog[] }>(
+      `/api/reports/audit-logs${qs}`,
+    );
   },
 };
 
@@ -294,11 +328,11 @@ export interface ApiItem {
   category: string;
   condition: string;
   price: string;
-  displayPrice: number;   // price + 5% service fee — what the buyer pays
-  serviceFee: number;     // the 5% service fee amount
+  displayPrice: number; // price + 5% service fee — what the buyer pays
+  serviceFee: number; // the 5% service fee amount
   description: string;
   imageUrl?: string;
-  sellerCode?: string;    // shown in My Listings so seller can deposit at kiosk
+  sellerCode?: string; // shown in My Listings so seller can deposit at kiosk
   sellerId: string;
   seller?: { id: string; fullName: string };
   status: string;
@@ -368,7 +402,7 @@ export interface ApiLockerPlan {
   name: string;
   durationDays: number;
   price: string;
-  dailyRate?: number;   // price / durationDays — computed by the API
+  dailyRate?: number; // price / durationDays — computed by the API
   highlight: boolean;
 }
 

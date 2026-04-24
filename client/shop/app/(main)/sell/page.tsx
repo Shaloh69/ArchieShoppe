@@ -23,13 +23,14 @@ import { notifyError, notifySuccess } from "@/lib/unithrift-toast";
 import { useAuth } from "@/contexts/auth-context";
 
 const STEPS = [
-  { label: "Item details",      icon: "📋" },
+  { label: "Item details", icon: "📋" },
   { label: "Subscription plan", icon: "📦" },
-  { label: "Review & confirm",  icon: "✅" },
-  { label: "Seller code",       icon: "🔑" },
+  { label: "Review & confirm", icon: "✅" },
+  { label: "Seller code", icon: "🔑" },
 ];
 
-const INPUT_WRAP = "bg-surface-bg-3 border border-border-subtle focus-within:border-brand-primary-400 transition-colors";
+const INPUT_WRAP =
+  "bg-surface-bg-3 border border-border-subtle focus-within:border-brand-primary-400 transition-colors";
 
 export default function SellPage() {
   const { user } = useAuth();
@@ -81,7 +82,8 @@ export default function SellPage() {
       if (!title.trim() || !description.trim() || Number(price) <= 0) {
         notifyError({
           title: "Missing listing details",
-          description: "Complete title, description, and valid price before continuing.",
+          description:
+            "Complete title, description, and valid price before continuing.",
         });
         return;
       }
@@ -102,7 +104,10 @@ export default function SellPage() {
     }
 
     if (step === 2) {
-      if (!selectedPlan) { setStep(1); return; }
+      if (!selectedPlan) {
+        setStep(1);
+        return;
+      }
       setSubmitting(true);
       try {
         const form = new FormData();
@@ -122,7 +127,10 @@ export default function SellPage() {
         });
         setStep(3);
       } catch (e) {
-        notifyError({ title: "Listing failed", description: (e as Error).message });
+        notifyError({
+          title: "Listing failed",
+          description: (e as Error).message,
+        });
       } finally {
         setSubmitting(false);
       }
@@ -135,8 +143,13 @@ export default function SellPage() {
       <div className="flex flex-col items-center gap-4 py-20 text-center">
         <span className="text-5xl">🏷️</span>
         <p className="text-xl font-extrabold text-text-1">Sellers only</p>
-        <p className="text-sm text-text-3">Upgrade your account to start listing items.</p>
-        <a href="/profile" className="rounded-xl bg-brand-primary-600 px-6 py-2.5 text-sm font-semibold text-white">
+        <p className="text-sm text-text-3">
+          Upgrade your account to start listing items.
+        </p>
+        <a
+          href="/profile"
+          className="rounded-xl bg-brand-primary-600 px-6 py-2.5 text-sm font-semibold text-white"
+        >
           Go to Profile
         </a>
       </div>
@@ -145,7 +158,11 @@ export default function SellPage() {
 
   return (
     <div className="space-y-5">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22 }}
+      >
         <h1 className="text-2xl font-extrabold text-text-1">Sell an item</h1>
         <p className="mt-0.5 text-sm text-text-3">
           Create a listing, pick a locker plan, and get your seller code.
@@ -170,19 +187,30 @@ export default function SellPage() {
 
         <div className="relative grid grid-cols-4 gap-2">
           {STEPS.map((s, i) => (
-            <div key={s.label} className="flex flex-col items-center gap-1.5 pt-0">
-              <div className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
-                i < step
-                  ? "border-brand-primary-600 bg-brand-primary-600 text-white shadow-sm"
-                  : i === step
-                    ? "border-brand-primary-600 bg-brand-primary-600 text-white shadow-md ring-4 ring-brand-primary-100"
-                    : "border-border-strong bg-surface-bg-1 text-text-4"
-              }`}>
+            <div
+              key={s.label}
+              className="flex flex-col items-center gap-1.5 pt-0"
+            >
+              <div
+                className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
+                  i < step
+                    ? "border-brand-primary-600 bg-brand-primary-600 text-white shadow-sm"
+                    : i === step
+                      ? "border-brand-primary-600 bg-brand-primary-600 text-white shadow-md ring-4 ring-brand-primary-100"
+                      : "border-border-strong bg-surface-bg-1 text-text-4"
+                }`}
+              >
                 {i < step ? "✓" : i + 1}
               </div>
-              <p className={`text-center text-[10px] font-medium leading-tight ${
-                i === step ? "text-brand-primary-700" : i < step ? "text-brand-primary-500" : "text-text-4"
-              }`}>
+              <p
+                className={`text-center text-[10px] font-medium leading-tight ${
+                  i === step
+                    ? "text-brand-primary-700"
+                    : i < step
+                      ? "text-brand-primary-500"
+                      : "text-text-4"
+                }`}
+              >
                 {s.label}
               </p>
             </div>
@@ -199,7 +227,6 @@ export default function SellPage() {
           exit={{ opacity: 0, x: -16 }}
           transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
         >
-
           {/* ── Step 0: Item Details ───────────────────────────────── */}
           {step === 0 && (
             <Card className="border border-border-subtle bg-surface-bg-1 shadow-sm">
@@ -229,7 +256,9 @@ export default function SellPage() {
                   labelPlacement="outside"
                   selectedKeys={[category]}
                   onSelectionChange={(keys) =>
-                    setCategory(Array.from(keys)[0]?.toString() || categories[0])
+                    setCategory(
+                      Array.from(keys)[0]?.toString() || categories[0],
+                    )
                   }
                 >
                   {categories.map((entry) => (
@@ -242,7 +271,9 @@ export default function SellPage() {
                   labelPlacement="outside"
                   selectedKeys={[condition]}
                   onSelectionChange={(keys) =>
-                    setCondition(Array.from(keys)[0]?.toString() || conditions[0])
+                    setCondition(
+                      Array.from(keys)[0]?.toString() || conditions[0],
+                    )
                   }
                 >
                   {conditions.map((entry) => (
@@ -271,7 +302,9 @@ export default function SellPage() {
                       accept="image/*"
                       className="hidden"
                       type="file"
-                      onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                      onChange={(e) =>
+                        setImageFile(e.target.files?.[0] ?? null)
+                      }
                     />
                   </label>
                 </div>
@@ -292,7 +325,8 @@ export default function SellPage() {
                 ) : (
                   <>
                     <p className="text-sm text-text-3">
-                      Select a storage plan. Your item will be held in a campus locker.
+                      Select a storage plan. Your item will be held in a campus
+                      locker.
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       {plans.map((plan) => {
@@ -315,13 +349,21 @@ export default function SellPage() {
                               </span>
                             )}
                             {active && (
-                              <span className="absolute right-3 top-3 text-brand-primary-600">✓</span>
+                              <span className="absolute right-3 top-3 text-brand-primary-600">
+                                ✓
+                              </span>
                             )}
-                            <p className={`text-base font-bold ${active ? "text-brand-primary-700" : "text-text-1"}`}>
+                            <p
+                              className={`text-base font-bold ${active ? "text-brand-primary-700" : "text-text-1"}`}
+                            >
                               {plan.name}
                             </p>
-                            <p className="mt-0.5 text-xs text-text-3">{plan.durationDays} days storage</p>
-                            <p className={`mt-2 text-2xl font-extrabold ${active ? "text-brand-primary-600" : "text-text-1"}`}>
+                            <p className="mt-0.5 text-xs text-text-3">
+                              {plan.durationDays} days storage
+                            </p>
+                            <p
+                              className={`mt-2 text-2xl font-extrabold ${active ? "text-brand-primary-600" : "text-text-1"}`}
+                            >
                               {peso(Number(plan.price))}
                             </p>
                           </motion.button>
@@ -329,8 +371,8 @@ export default function SellPage() {
                       })}
                     </div>
                     <div className="flex items-center gap-2 rounded-lg bg-brand-gold-50 px-3 py-2 text-xs text-brand-gold-700">
-                      <span>⚠️</span>
-                      A paid subscription is required before slot assignment.
+                      <span>⚠️</span>A paid subscription is required before slot
+                      assignment.
                     </div>
                   </>
                 )}
@@ -360,23 +402,37 @@ export default function SellPage() {
 
                 {selectedPlan && (
                   <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-primary-200 bg-brand-primary-50 p-3 text-sm">
-                    <span className="font-semibold text-brand-primary-700">Plan:</span>
-                    <Chip className="bg-brand-primary-600 text-white text-xs" size="sm">
+                    <span className="font-semibold text-brand-primary-700">
+                      Plan:
+                    </span>
+                    <Chip
+                      className="bg-brand-primary-600 text-white text-xs"
+                      size="sm"
+                    >
                       {selectedPlan.name}
                     </Chip>
-                    <span className="font-bold text-brand-primary-700">{peso(Number(selectedPlan.price))}</span>
-                    <span className="text-text-3">({selectedPlan.durationDays} days)</span>
+                    <span className="font-bold text-brand-primary-700">
+                      {peso(Number(selectedPlan.price))}
+                    </span>
+                    <span className="text-text-3">
+                      ({selectedPlan.durationDays} days)
+                    </span>
                   </div>
                 )}
 
                 <div className="rounded-xl border border-border-subtle bg-surface-bg-3 p-3 text-sm text-text-2">
                   <p className="font-semibold text-text-1">
                     Available slots:{" "}
-                    <span className="text-brand-green-600">{availableSlots.length}</span>
+                    <span className="text-brand-green-600">
+                      {availableSlots.length}
+                    </span>
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {availableSlots.slice(0, 6).map((s) => (
-                      <div key={s.slotId} className="flex items-center gap-1 rounded-lg border border-border-subtle bg-surface-bg-1 px-2 py-1 text-xs">
+                      <div
+                        key={s.slotId}
+                        className="flex items-center gap-1 rounded-lg border border-border-subtle bg-surface-bg-1 px-2 py-1 text-xs"
+                      >
                         <span>{s.slotId}</span>
                         <StatusChip kind="locker" value="EMPTY" />
                       </div>
@@ -409,7 +465,12 @@ export default function SellPage() {
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.15, type: "spring", stiffness: 280, damping: 22 }}
+                  transition={{
+                    delay: 0.15,
+                    type: "spring",
+                    stiffness: 280,
+                    damping: 22,
+                  }}
                   className="rounded-2xl border-2 border-brand-primary-600 bg-gradient-to-br from-brand-primary-600 to-brand-primary-700 px-10 py-5 shadow-lg"
                 >
                   <p className="text-5xl font-extrabold tracking-[0.25em] text-white">
@@ -419,11 +480,13 @@ export default function SellPage() {
 
                 <p className="max-w-xs text-sm text-text-2">
                   Your listing is in{" "}
-                  <span className="font-semibold text-text-1">DRAFT</span>. Go to
-                  the kiosk, open slot {createdItem.slotId ?? "N/A"}, and place your item.
+                  <span className="font-semibold text-text-1">DRAFT</span>. Go
+                  to the kiosk, open slot {createdItem.slotId ?? "N/A"}, and
+                  place your item.
                 </p>
                 <p className="text-xs text-text-4">
-                  After placing your item, activate the listing from My Listings.
+                  After placing your item, activate the listing from My
+                  Listings.
                 </p>
 
                 {selectedPlan && (
@@ -433,9 +496,17 @@ export default function SellPage() {
                       ["Plan", selectedPlan.name],
                       ["Price", peso(Number(selectedPlan.price))],
                       ["Duration", `${selectedPlan.durationDays} days`],
-                      ["Ends on", createdItem.subscriptionEndsAt ? shortDate(createdItem.subscriptionEndsAt) : "Pending"],
+                      [
+                        "Ends on",
+                        createdItem.subscriptionEndsAt
+                          ? shortDate(createdItem.subscriptionEndsAt)
+                          : "Pending",
+                      ],
                     ].map(([k, v]) => (
-                      <div key={k} className="flex items-baseline gap-2 text-text-3">
+                      <div
+                        key={k}
+                        className="flex items-baseline gap-2 text-text-3"
+                      >
                         <span className="min-w-[64px]">{k}</span>
                         <span className="text-text-2">{v}</span>
                       </div>
@@ -445,7 +516,6 @@ export default function SellPage() {
               </CardBody>
             </Card>
           )}
-
         </motion.div>
       </AnimatePresence>
 
@@ -469,9 +539,11 @@ export default function SellPage() {
             isLoading={submitting}
             onPress={goToNext}
           >
-            {step === 0 ? "Continue to plan →"
-              : step === 1 ? "Continue to review →"
-              : "Create listing 🚀"}
+            {step === 0
+              ? "Continue to plan →"
+              : step === 1
+                ? "Continue to review →"
+                : "Create listing 🚀"}
           </Button>
         </motion.div>
       )}

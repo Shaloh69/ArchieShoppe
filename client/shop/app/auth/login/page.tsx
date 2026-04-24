@@ -23,7 +23,10 @@ export default function LoginPage() {
       await login(email, password);
       router.push("/browse");
     } catch (err) {
-      notifyError({ title: "Login failed", description: (err as Error).message });
+      notifyError({
+        title: "Login failed",
+        description: (err as Error).message,
+      });
     } finally {
       setLoading(false);
     }
@@ -43,7 +46,9 @@ export default function LoginPage() {
         <h2 className="text-lg font-semibold text-text-1">Sign in</h2>
         <form className="space-y-3" onSubmit={onSubmit}>
           <Input
-            classNames={{ inputWrapper: "bg-surface-bg-3 border border-border-strong" }}
+            classNames={{
+              inputWrapper: "bg-surface-bg-3 border border-border-strong",
+            }}
             label="Email"
             labelPlacement="outside"
             placeholder="you@uclm.edu"
@@ -52,7 +57,9 @@ export default function LoginPage() {
             onValueChange={setEmail}
           />
           <Input
-            classNames={{ inputWrapper: "bg-surface-bg-3 border border-border-strong" }}
+            classNames={{
+              inputWrapper: "bg-surface-bg-3 border border-border-strong",
+            }}
             label="Password"
             labelPlacement="outside"
             placeholder="••••••••"
@@ -71,7 +78,10 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-text-3">
           No account?{" "}
-          <NextLink className="font-medium text-brand-primary-600 hover:underline" href="/auth/register">
+          <NextLink
+            className="font-medium text-brand-primary-600 hover:underline"
+            href="/auth/register"
+          >
             Register
           </NextLink>
         </p>

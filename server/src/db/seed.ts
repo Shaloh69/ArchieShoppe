@@ -14,8 +14,8 @@ export async function seedDatabase(prisma: PrismaClient): Promise<void> {
 
   console.log('[seed] Seeding subscription plans...');
   const plans = [
-    { planKey: 'WEEKLY_1',  name: '1 Week',  durationDays: 7,  price: 149, highlight: false },
-    { planKey: 'MONTHLY_1', name: '1 Month', durationDays: 30, price: 399, highlight: true  },
+    { planKey: 'WEEKLY_1', name: '1 Week', durationDays: 7, price: 149, highlight: false },
+    { planKey: 'MONTHLY_1', name: '1 Month', durationDays: 30, price: 399, highlight: true },
   ];
   for (const p of plans) {
     await prisma.lockerSubscriptionPlan.upsert({

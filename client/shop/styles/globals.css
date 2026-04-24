@@ -97,8 +97,10 @@ html, body {
   color: theme(--color-text-1);
 }
 
-a { color: theme(--color-brand-primary-600); transition: color 180ms ease; }
-a:hover { color: theme(--color-brand-primary-700); }
+@layer base {
+  a { color: theme(--color-brand-primary-600); transition: color 180ms ease; }
+  a:hover { color: theme(--color-brand-primary-700); }
+}
 
 /* ── Focus ring ──────────────────────────────────────────────────────────── */
 .focus-ring {

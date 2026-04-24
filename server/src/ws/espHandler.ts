@@ -1,7 +1,12 @@
-import { TaggedWebSocket, espConnections } from './wsState';
+import { TaggedWebSocket, espConnections, espHealth } from './wsState';
 import { prisma } from '../config/db';
 import { createAuditLog } from '../utils/audit';
 import { broadcastToAdmins } from './broadcaster';
+
+interface EspSlot {
+  slotId: string;
+  doorOpen: boolean;
+}
 
 interface EspMessage {
   type: string;
@@ -10,6 +15,12 @@ interface EspMessage {
   doorState?: 'OPEN' | 'CLOSED';
   sensorIndex?: number;
   metadata?: Record<string, unknown>;
+  // heartbeat fields
+  deviceId?: string;
+  rssi?: number;
+  uptime?: number;
+  freeHeap?: number;
+  slots?: EspSlot[];
 }
 
 const SLOT_MAP: Record<number, string> = {
@@ -74,11 +85,38 @@ export async function handleEspMessage(ws: TaggedWebSocket, msg: EspMessage): Pr
     }
 
     case 'HEARTBEAT': {
+      // Update in-memory health state
+      espHealth.connected = true;
+      espHealth.deviceId = msg.deviceId ?? deviceId;
+      espHealth.lastSeen = Date.now();
+      espHealth.heartbeatCount += 1;
+      espHealth.rssi = msg.rssi ?? null;
+      espHealth.uptime = msg.uptime ?? null;
+      espHealth.freeHeap = msg.freeHeap ?? null;
+      espHealth.slots = msg.slots ?? [];
+
       ws.send(JSON.stringify({ type: 'HEARTBEAT_ACK', ts: Date.now() }));
+
+      // Broadcast live health to all connected admins
+      broadcastToAdmins({
+        type: 'ESP_HEALTH',
+        connected: true,
+        deviceId: espHealth.deviceId,
+        lastSeen: espHealth.lastSeen,
+        heartbeatCount: espHealth.heartbeatCount,
+        rssi: espHealth.rssi,
+        uptime: espHealth.uptime,
+        freeHeap: espHealth.freeHeap,
+        slots: espHealth.slots,
+      });
       break;
     }
 
     case 'STATUS_REPORT': {
+      // Update slot states from full report
+      if (msg.slots) {
+        espHealth.slots = msg.slots;
+      }
       broadcastToAdmins({ type: 'ESP_STATUS', deviceId, data: msg });
       break;
     }

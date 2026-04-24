@@ -3,6 +3,7 @@ import { WebSocketServer } from 'ws';
 import { TaggedWebSocket, espConnections } from './wsState';
 import { handleEspMessage } from './espHandler';
 import { handleAdminMessage, registerAdmin, unregisterAdmin } from './adminHandler';
+import { handleCameraConnection } from './cameraHandler';
 import { verifyAccessToken } from '../utils/jwt';
 
 export { TaggedWebSocket } from './wsState';
@@ -17,6 +18,8 @@ export function initWebSocketServer(server: Server): WebSocketServer {
       handleEspConnection(ws, req);
     } else if (url.startsWith('/ws/admin')) {
       handleAdminConnection(ws, req);
+    } else if (url.startsWith('/ws/camera')) {
+      handleCameraConnection(ws, req);
     } else {
       ws.close(4001, 'Unknown WebSocket path');
     }
@@ -36,7 +39,7 @@ export function initWebSocketServer(server: Server): WebSocketServer {
 
   wss.on('close', () => clearInterval(interval));
 
-  console.log('[ws] WebSocket server initialised on /ws/esp and /ws/admin');
+  console.log('[ws] WebSocket server initialised on /ws/esp, /ws/admin, /ws/camera');
   return wss;
 }
 

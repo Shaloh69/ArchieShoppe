@@ -19,9 +19,7 @@ function KioskSellSlotContent() {
       title: "Slot access granted",
       description: `Code ${code} consumed. Place your item in slot ${slot}.`,
     });
-    router.push(
-      `/sell/place?slot=${slot}&item=${encodeURIComponent(item)}`,
-    );
+    router.push(`/sell/place?slot=${slot}&item=${encodeURIComponent(item)}`);
   };
 
   return (

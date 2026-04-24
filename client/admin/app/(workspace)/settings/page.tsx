@@ -20,14 +20,16 @@ const cardVariants = {
 };
 
 export default function SettingsPage() {
-  const [feePct, setFeePct]         = useState<number | "">("");
+  const [feePct, setFeePct] = useState<number | "">("");
   const [feeLoading, setFeeLoading] = useState(true);
-  const [feeSaving, setFeeSaving]   = useState(false);
+  const [feeSaving, setFeeSaving] = useState(false);
 
-  const [plans, setPlans]             = useState<ApiLockerPlan[]>([]);
+  const [plans, setPlans] = useState<ApiLockerPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
-  const [planEdits, setPlanEdits]     = useState<Record<string, { name: string; price: string }>>({});
-  const [savingId, setSavingId]       = useState<string | null>(null);
+  const [planEdits, setPlanEdits] = useState<
+    Record<string, { name: string; price: string }>
+  >({});
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const loadFee = useCallback(async () => {
     setFeeLoading(true);
@@ -47,7 +49,9 @@ export default function SettingsPage() {
       const { plans: p } = await lockersApi.plans();
       setPlans(p);
       const edits: Record<string, { name: string; price: string }> = {};
-      p.forEach((plan) => { edits[plan.id] = { name: plan.name, price: plan.price }; });
+      p.forEach((plan) => {
+        edits[plan.id] = { name: plan.name, price: plan.price };
+      });
       setPlanEdits(edits);
     } catch {
       // non-blocking
@@ -66,9 +70,15 @@ export default function SettingsPage() {
     setFeeSaving(true);
     try {
       await configApi.setPlatformFee(Number(feePct));
-      notifySuccess({ title: "Fee updated", description: `Platform fee set to ${feePct}%.` });
+      notifySuccess({
+        title: "Fee updated",
+        description: `Platform fee set to ${feePct}%.`,
+      });
     } catch (e: unknown) {
-      notifyError({ title: "Update failed", description: (e as Error).message });
+      notifyError({
+        title: "Update failed",
+        description: (e as Error).message,
+      });
     } finally {
       setFeeSaving(false);
     }
@@ -82,10 +92,20 @@ export default function SettingsPage() {
       const price = parseFloat(edit.price);
       if (isNaN(price) || price < 0) throw new Error("Invalid price");
       await configApi.updateSubscriptionPlan(id, { name: edit.name, price });
-      notifySuccess({ title: "Plan updated", description: `"${edit.name}" saved.` });
-      setPlans((prev) => prev.map((p) => p.id === id ? { ...p, name: edit.name, price: edit.price } : p));
+      notifySuccess({
+        title: "Plan updated",
+        description: `"${edit.name}" saved.`,
+      });
+      setPlans((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, name: edit.name, price: edit.price } : p,
+        ),
+      );
     } catch (e: unknown) {
-      notifyError({ title: "Update failed", description: (e as Error).message });
+      notifyError({
+        title: "Update failed",
+        description: (e as Error).message,
+      });
     } finally {
       setSavingId(null);
     }
@@ -99,17 +119,27 @@ export default function SettingsPage() {
         transition={{ duration: 0.22 }}
       >
         <h1 className="text-2xl font-semibold text-text-1">Settings</h1>
-        <p className="text-sm text-text-3">Platform configuration and subscription plan management.</p>
+        <p className="text-sm text-text-3">
+          Platform configuration and subscription plan management.
+        </p>
       </motion.div>
 
       <div className="grid gap-5 xl:grid-cols-2">
         {/* Platform fee card */}
-        <motion.div custom={0} variants={cardVariants} initial="hidden" animate="visible">
+        <motion.div
+          custom={0}
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <Card className="panel-surface">
             <CardHeader className="flex flex-col items-start gap-1 px-5 pt-5">
-              <p className="text-base font-semibold text-text-1">Platform Fee</p>
+              <p className="text-base font-semibold text-text-1">
+                Platform Fee
+              </p>
               <p className="text-xs text-text-3">
-                Percentage charged to buyers on top of the item price. Applies to all new orders.
+                Percentage charged to buyers on top of the item price. Applies
+                to all new orders.
               </p>
             </CardHeader>
             <CardBody className="px-5 pb-5">
@@ -126,7 +156,10 @@ export default function SettingsPage() {
                     value={String(feePct)}
                     onValueChange={(v) => setFeePct(v === "" ? "" : Number(v))}
                     endContent={<span className="text-sm text-text-3">%</span>}
-                    classNames={{ inputWrapper: "bg-surface-bg-1 border border-border-subtle" }}
+                    classNames={{
+                      inputWrapper:
+                        "bg-surface-bg-1 border border-border-subtle",
+                    }}
                   />
                   <Button
                     className="btn-brand shrink-0"
@@ -142,11 +175,20 @@ export default function SettingsPage() {
         </motion.div>
 
         {/* Subscription plans card */}
-        <motion.div custom={1} variants={cardVariants} initial="hidden" animate="visible">
+        <motion.div
+          custom={1}
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <Card className="panel-surface">
             <CardHeader className="flex flex-col items-start gap-1 px-5 pt-5">
-              <p className="text-base font-semibold text-text-1">Subscription Plans</p>
-              <p className="text-xs text-text-3">Edit locker subscription plan names and prices.</p>
+              <p className="text-base font-semibold text-text-1">
+                Subscription Plans
+              </p>
+              <p className="text-xs text-text-3">
+                Edit locker subscription plan names and prices.
+              </p>
             </CardHeader>
             <CardBody className="space-y-4 px-5 pb-5">
               {plansLoading ? (
@@ -172,9 +214,15 @@ export default function SettingsPage() {
                         size="sm"
                         value={planEdits[plan.id]?.name ?? plan.name}
                         onValueChange={(v) =>
-                          setPlanEdits((prev) => ({ ...prev, [plan.id]: { ...prev[plan.id], name: v } }))
+                          setPlanEdits((prev) => ({
+                            ...prev,
+                            [plan.id]: { ...prev[plan.id], name: v },
+                          }))
                         }
-                        classNames={{ inputWrapper: "bg-surface-bg-0 border border-border-subtle" }}
+                        classNames={{
+                          inputWrapper:
+                            "bg-surface-bg-0 border border-border-subtle",
+                        }}
                       />
                       <Input
                         label="Price (₱)"
@@ -184,9 +232,15 @@ export default function SettingsPage() {
                         step={1}
                         value={planEdits[plan.id]?.price ?? plan.price}
                         onValueChange={(v) =>
-                          setPlanEdits((prev) => ({ ...prev, [plan.id]: { ...prev[plan.id], price: v } }))
+                          setPlanEdits((prev) => ({
+                            ...prev,
+                            [plan.id]: { ...prev[plan.id], price: v },
+                          }))
                         }
-                        classNames={{ inputWrapper: "bg-surface-bg-0 border border-border-subtle" }}
+                        classNames={{
+                          inputWrapper:
+                            "bg-surface-bg-0 border border-border-subtle",
+                        }}
                       />
                       <Button
                         className="btn-brand mt-auto shrink-0"

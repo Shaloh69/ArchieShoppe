@@ -35,7 +35,11 @@ const containerVariants = {
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.25, 0.1, 0.25, 1] } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.28, ease: [0.25, 0.1, 0.25, 1] },
+  },
 };
 
 const KPI_COLOR: Record<number, string> = {
@@ -57,14 +61,18 @@ export default function AdminOverviewPage() {
 
   const fetchAll = useCallback(async (silent = false) => {
     if (silent) setRefreshing(true);
-    else { setLoading(true); setError(false); }
+    else {
+      setLoading(true);
+      setError(false);
+    }
     try {
-      const [overviewRes, ordersRes, refundsRes, lockersRes] = await Promise.all([
-        reportsApi.overview(),
-        ordersApi.adminAll({ status: "HELD", limit: "10" }),
-        refundsApi.adminAll({ status: "PENDING", limit: "10" }),
-        lockersApi.all(),
-      ]);
+      const [overviewRes, ordersRes, refundsRes, lockersRes] =
+        await Promise.all([
+          reportsApi.overview(),
+          ordersApi.adminAll({ status: "HELD", limit: "10" }),
+          refundsApi.adminAll({ status: "PENDING", limit: "10" }),
+          lockersApi.all(),
+        ]);
       setOverview(overviewRes.overview);
       setHeldOrders(ordersRes.orders);
       setPendingRefunds(refundsRes.refunds);
@@ -90,11 +98,17 @@ export default function AdminOverviewPage() {
 
   const kpis = overview
     ? [
-        { label: "Active items",      value: overview.activeItems.toString() },
-        { label: "Refunds pending",   value: overview.pendingRefunds.toString() },
-        { label: "Occupied slots",    value: `${overview.occupiedSlots} / ${overview.totalSlots}` },
-        { label: "Total orders",      value: overview.totalOrders.toString() },
-        { label: "Platform revenue",  value: peso(Number(overview.platformRevenue)) },
+        { label: "Active items", value: overview.activeItems.toString() },
+        { label: "Refunds pending", value: overview.pendingRefunds.toString() },
+        {
+          label: "Occupied slots",
+          value: `${overview.occupiedSlots} / ${overview.totalSlots}`,
+        },
+        { label: "Total orders", value: overview.totalOrders.toString() },
+        {
+          label: "Platform revenue",
+          value: peso(Number(overview.platformRevenue)),
+        },
       ]
     : [];
 
@@ -107,7 +121,10 @@ export default function AdminOverviewPage() {
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="border border-border-subtle bg-surface-bg-2">
+            <Card
+              key={i}
+              className="border border-border-subtle bg-surface-bg-2"
+            >
               <CardBody className="gap-2 p-4">
                 <Skeleton className="h-3 w-20 rounded" />
                 <Skeleton className="h-8 w-24 rounded" />
@@ -139,10 +156,15 @@ export default function AdminOverviewPage() {
       >
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold text-text-1">Overview</h1>
-          {refreshing && <span className="text-xs text-text-3 animate-pulse">Refreshing…</span>}
+          {refreshing && (
+            <span className="text-xs text-text-3 animate-pulse">
+              Refreshing…
+            </span>
+          )}
         </div>
         <p className="text-sm text-text-3">
-          Operational snapshot for transactions, refunds, and lockers. Auto-refreshes every 30s.
+          Operational snapshot for transactions, refunds, and lockers.
+          Auto-refreshes every 30s.
         </p>
       </motion.div>
 
@@ -156,8 +178,12 @@ export default function AdminOverviewPage() {
           <motion.div key={kpi.label} variants={cardVariants}>
             <Card className="border border-border-subtle bg-surface-bg-2 shadow-sm transition-shadow hover:shadow-md">
               <CardBody className="gap-1 p-4">
-                <p className="text-xs uppercase tracking-wide text-text-3">{kpi.label}</p>
-                <p className={`text-2xl font-semibold ${KPI_COLOR[i] ?? "text-brand-primary-800"}`}>
+                <p className="text-xs uppercase tracking-wide text-text-3">
+                  {kpi.label}
+                </p>
+                <p
+                  className={`text-2xl font-semibold ${KPI_COLOR[i] ?? "text-brand-primary-800"}`}
+                >
                   {kpi.value}
                 </p>
               </CardBody>
@@ -238,10 +264,13 @@ export default function AdminOverviewPage() {
       {errorSlots.length > 0 ? (
         <Card className="border border-status-danger-600/40 bg-surface-bg-2">
           <CardBody className="p-4 text-sm text-text-2">
-            <p className="font-semibold text-status-danger-600">Locker alerts</p>
+            <p className="font-semibold text-status-danger-600">
+              Locker alerts
+            </p>
             {errorSlots.map((slot) => (
               <p key={slot.slotId}>
-                {slot.slotId}: {slot.status} — {slot.lastEvent ?? "no recent event"}
+                {slot.slotId}: {slot.status} —{" "}
+                {slot.lastEvent ?? "no recent event"}
               </p>
             ))}
           </CardBody>

@@ -212,12 +212,22 @@ void loop() {
     wsSend(out);
   });
 
-  // Heartbeat
+  // Heartbeat — includes diagnostics so the admin monitor can display live health
   unsigned long now = millis();
   if (now - lastHeartbeat >= HEARTBEAT_INTERVAL_MS) {
     lastHeartbeat = now;
     JsonDocument doc;
-    doc["type"] = "HEARTBEAT";
+    doc["type"]      = "HEARTBEAT";
+    doc["deviceId"]  = DEVICE_ID;
+    doc["rssi"]      = WiFi.RSSI();           // dBm, e.g. -65
+    doc["uptime"]    = millis();              // ms since last boot
+    doc["freeHeap"]  = ESP.getFreeHeap();     // bytes
+    JsonArray slotArr = doc["slots"].to<JsonArray>();
+    for (int i = 0; i < 6; i++) {
+      JsonObject s = slotArr.add<JsonObject>();
+      s["slotId"]   = SLOT_IDS[i];
+      s["doorOpen"] = isDoorOpen(i);
+    }
     String out;
     serializeJson(doc, out);
     wsSend(out);

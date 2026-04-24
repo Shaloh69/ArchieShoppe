@@ -10,7 +10,7 @@ export const createOrderSchema = z.object({
   itemId: z.string().cuid(),
 });
 
-const PLATFORM_COMMISSION = 0.1;  // 10 % of buyer's total taken as platform commission
+const PLATFORM_COMMISSION = 0.1; // 10 % of buyer's total taken as platform commission
 const SELLER_SHARE = 1 - PLATFORM_COMMISSION;
 const HOLD_HOURS = 24;
 
@@ -28,9 +28,9 @@ export async function createOrder(buyerId: string, data: z.infer<typeof createOr
     throw Object.assign(new Error('Item has no locker slot assigned'), { status: 400 });
 
   const feeRate = await getPlatformFeeRate();
-  const basePrice  = item.price.toNumber();
+  const basePrice = item.price.toNumber();
   const serviceFee = Math.ceil(basePrice * feeRate * 100) / 100;
-  const totalAmount = Math.ceil((basePrice + serviceFee) * 100) / 100;  // what buyer pays
+  const totalAmount = Math.ceil((basePrice + serviceFee) * 100) / 100; // what buyer pays
   const holdEndsAt = new Date(Date.now() + HOLD_HOURS * 60 * 60 * 1000);
 
   let personalCode: string;
@@ -43,7 +43,13 @@ export async function createOrder(buyerId: string, data: z.infer<typeof createOr
   } while (attempts < 10);
 
   // Buyer pays base price + 5% service fee
-  await debitWallet(buyerId, totalAmount, 'PURCHASE', undefined, `Purchase: ${item.title} (incl. ₱${serviceFee} service fee)`);
+  await debitWallet(
+    buyerId,
+    totalAmount,
+    'PURCHASE',
+    undefined,
+    `Purchase: ${item.title} (incl. ₱${serviceFee} service fee)`,
+  );
 
   const order = await prisma.$transaction(async (tx) => {
     await tx.item.update({ where: { id: item.id }, data: { status: 'PENDING' } });
@@ -52,7 +58,7 @@ export async function createOrder(buyerId: string, data: z.infer<typeof createOr
         itemId: item.id,
         buyerId,
         sellerId: item.sellerId,
-        amount: totalAmount,   // total charged to buyer (base + service fee)
+        amount: totalAmount, // total charged to buyer (base + service fee)
         slotId: item.slotId!,
         personalCode: personalCode!,
         holdEndsAt,

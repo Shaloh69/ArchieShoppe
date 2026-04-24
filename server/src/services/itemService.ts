@@ -6,7 +6,10 @@ import { broadcastToAdmins } from '../ws/broadcaster';
 import { generatePersonalCode } from '../utils/codeGenerator';
 import { getPlatformFeeRate } from './configService';
 
-export function withDisplayPrice<T extends { price: { toNumber(): number } }>(item: T, feeRate: number) {
+export function withDisplayPrice<T extends { price: { toNumber(): number } }>(
+  item: T,
+  feeRate: number,
+) {
   const base = item.price.toNumber();
   return {
     ...item,
@@ -92,7 +95,9 @@ export async function browseItems(query: z.infer<typeof browseSchema>, userId?: 
   }
 
   return {
-    total, page, limit,
+    total,
+    page,
+    limit,
     items: raw.map((item) => ({
       ...withDisplayPrice(item, feeRate),
       savedCount: item._count.wishlist,
@@ -145,7 +150,13 @@ export async function createItem(
   if (!slot) throw Object.assign(new Error('No locker slots available'), { status: 503 });
 
   const planPrice = plan.price.toNumber();
-  await debitWallet(sellerId, planPrice, 'SLOT_RENTAL', undefined, `Slot rental: ${plan.name} (${plan.durationDays}d @ ₱${(planPrice / plan.durationDays).toFixed(2)}/day)`);
+  await debitWallet(
+    sellerId,
+    planPrice,
+    'SLOT_RENTAL',
+    undefined,
+    `Slot rental: ${plan.name} (${plan.durationDays}d @ ₱${(planPrice / plan.durationDays).toFixed(2)}/day)`,
+  );
 
   // Generate unique seller kiosk code — shown in the app, entered at the kiosk to unlock the slot
   let sellerCode: string;
@@ -208,10 +219,9 @@ export async function verifySellerCode(code: string) {
   });
 
   if (!item) {
-    throw Object.assign(
-      new Error('Invalid seller code or item not yet approved by admin'),
-      { status: 404 },
-    );
+    throw Object.assign(new Error('Invalid seller code or item not yet approved by admin'), {
+      status: 404,
+    });
   }
   if (!item.slotId) {
     throw Object.assign(new Error('No locker slot assigned to this item'), { status: 400 });
@@ -281,9 +291,10 @@ export async function getMyListings(sellerId: string, page = 1, limit = 20) {
       subscriptionPlan: item.subscriptionPlan
         ? {
             ...item.subscriptionPlan,
-            dailyRate: Math.ceil(
-              (item.subscriptionPlan.price.toNumber() / item.subscriptionPlan.durationDays) * 100,
-            ) / 100,
+            dailyRate:
+              Math.ceil(
+                (item.subscriptionPlan.price.toNumber() / item.subscriptionPlan.durationDays) * 100,
+              ) / 100,
           }
         : null,
     })),

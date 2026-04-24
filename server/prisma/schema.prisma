@@ -138,11 +138,12 @@ model LockerSubscriptionPlan {
 }
 
 model LockerSlot {
-  id        String       @id @default(cuid())
-  slotId    String       @unique
-  status    LockerStatus @default(EMPTY)
-  lastEvent String?
-  updatedAt DateTime     @updatedAt
+  id          String       @id @default(cuid())
+  slotId      String       @unique
+  status      LockerStatus @default(EMPTY)
+  lastEvent   String?
+  cameraIndex Int?         // USB camera device index assigned to this slot
+  updatedAt   DateTime     @updatedAt
 
   currentItem Item?
   events      LockerEvent[]

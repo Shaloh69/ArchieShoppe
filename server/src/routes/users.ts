@@ -1,10 +1,14 @@
+import path from 'path';
+import crypto from 'crypto';
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { adminOnly } from '../middleware/adminOnly';
 import { prisma } from '../config/db';
-import { upload, uploadToSupabase } from '../utils/upload';
+import { supabase } from '../config/supabase';
+import { env } from '../config/env';
+import { upload } from '../utils/upload';
 import { createAuditLog } from '../utils/audit';
 
 const router = Router();
@@ -105,14 +109,14 @@ router.post(
       return;
     }
     // Upload to profiles/ folder in Supabase
-    const ext = require('path').extname(req.file.originalname).toLowerCase() || '.jpg';
-    const name = `profiles/${require('crypto').randomBytes(12).toString('hex')}${ext}`;
-    const { supabase } = require('../config/supabase');
-    const { env } = require('../config/env');
-    const { error } = await supabase.storage.from(env.SUPABASE_BUCKET).upload(name, req.file.buffer, {
-      contentType: req.file.mimetype,
-      upsert: false,
-    });
+    const ext = path.extname(req.file.originalname).toLowerCase() || '.jpg';
+    const name = `profiles/${crypto.randomBytes(12).toString('hex')}${ext}`;
+    const { error } = await supabase.storage
+      .from(env.SUPABASE_BUCKET)
+      .upload(name, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false,
+      });
     if (error) {
       res.status(500).json({ message: `Upload failed: ${error.message}` });
       return;
@@ -123,7 +127,15 @@ router.post(
     const user = await prisma.user.update({
       where: { id: req.user!.userId },
       data: { avatarUrl },
-      select: { id: true, email: true, fullName: true, avatarUrl: true, role: true, walletBalance: true, isVerified: true },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        avatarUrl: true,
+        role: true,
+        walletBalance: true,
+        isVerified: true,
+      },
     });
     res.json({ user });
   },
@@ -146,9 +158,19 @@ router.patch('/me/role', authenticate, async (req: AuthRequest, res: Response) =
   const user = await prisma.user.update({
     where: { id: req.user!.userId },
     data: { role: 'SELLER' },
-    select: { id: true, email: true, fullName: true, avatarUrl: true, role: true, walletBalance: true, isVerified: true },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      avatarUrl: true,
+      role: true,
+      walletBalance: true,
+      isVerified: true,
+    },
   });
-  await createAuditLog('ADMIN', req.user!.userId, req.user!.userId, 'ROLE_UPGRADED', { newRole: 'SELLER' });
+  await createAuditLog('ADMIN', req.user!.userId, req.user!.userId, 'ROLE_UPGRADED', {
+    newRole: 'SELLER',
+  });
   res.json({ user });
 });
 

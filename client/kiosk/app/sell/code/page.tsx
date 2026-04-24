@@ -42,7 +42,8 @@ export default function KioskSellCodePage() {
     } catch (e) {
       notifyError({
         title: "Invalid code",
-        description: (e as Error).message ?? "Code not found or item not yet approved.",
+        description:
+          (e as Error).message ?? "Code not found or item not yet approved.",
       });
       setCode("");
     } finally {
@@ -54,7 +55,9 @@ export default function KioskSellCodePage() {
     <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-3xl items-center">
       <Card className="w-full border border-border-subtle bg-surface-bg-2">
         <CardBody className="space-y-5 p-8">
-          <h1 className="text-3xl font-semibold text-text-1">Enter Seller Code</h1>
+          <h1 className="text-3xl font-semibold text-text-1">
+            Enter Seller Code
+          </h1>
           <p className="text-sm text-text-3">
             Find your 6-character code in the UniThrift app under My Listings.
           </p>

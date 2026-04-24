@@ -20,7 +20,7 @@ export async function getPlatformFeePct(): Promise<number> {
 export async function setPlatformFeePct(pct: number): Promise<void> {
   const safe = Math.max(0, Math.min(50, pct));
   await prisma.platformConfig.upsert({
-    where:  { key: FEE_KEY },
+    where: { key: FEE_KEY },
     update: { value: safe.toString() },
     create: { key: FEE_KEY, value: safe.toString() },
   });

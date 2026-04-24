@@ -15,7 +15,9 @@ const createReviewSchema = z.object({
 router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   const parsed = createReviewSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ message: 'Validation error', errors: parsed.error.flatten().fieldErrors });
+    res
+      .status(400)
+      .json({ message: 'Validation error', errors: parsed.error.flatten().fieldErrors });
     return;
   }
   const { orderId, rating, comment } = parsed.data;
@@ -23,7 +25,13 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { id: true, buyerId: true, sellerId: true, status: true, review: { select: { id: true } } },
+    select: {
+      id: true,
+      buyerId: true,
+      sellerId: true,
+      status: true,
+      review: { select: { id: true } },
+    },
   });
   if (!order) {
     res.status(404).json({ message: 'Order not found' });

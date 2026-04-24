@@ -37,8 +37,8 @@ export function Providers({ children, themeProps }: ProvidersProps) {
               variant: "flat",
               motionProps: {
                 initial: { opacity: 0, y: -14, scale: 0.94 },
-                animate: { opacity: 1, y: 0,   scale: 1    },
-                exit:    { opacity: 0, y: -10,  scale: 0.96 },
+                animate: { opacity: 1, y: 0, scale: 1 },
+                exit: { opacity: 0, y: -10, scale: 0.96 },
                 transition: { type: "spring", stiffness: 420, damping: 32 },
               },
               shouldShowTimeoutProgress: true,

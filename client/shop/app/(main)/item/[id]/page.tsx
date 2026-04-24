@@ -9,26 +9,46 @@ import { Skeleton } from "@heroui/skeleton";
 import { Spinner } from "@heroui/spinner";
 import { Textarea } from "@heroui/input";
 import {
-  Modal, ModalBody, ModalContent, ModalFooter, ModalHeader,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
 } from "@heroui/modal";
 
 import { useAuth } from "@/contexts/auth-context";
-import { itemsApi, ordersApi, wishlistApi, reviewsApi, type ApiItem, type ApiReview } from "@/lib/api-client";
+import {
+  itemsApi,
+  ordersApi,
+  wishlistApi,
+  reviewsApi,
+  type ApiItem,
+  type ApiReview,
+} from "@/lib/api-client";
 import { peso } from "@/lib/unithrift-format";
 import { notifyError, notifySuccess } from "@/lib/unithrift-toast";
 
 const CONDITION_META: Record<string, { label: string; color: string }> = {
-  NEW:      { label: "New",      color: "bg-brand-green-100 text-brand-green-700" },
-  LIKE_NEW: { label: "Like New", color: "bg-brand-teal-100 text-brand-teal-700" },
-  GOOD:     { label: "Good",     color: "bg-brand-gold-100 text-brand-gold-700" },
-  FAIR:     { label: "Fair",     color: "bg-brand-primary-100 text-brand-primary-700" },
+  NEW: { label: "New", color: "bg-brand-green-100 text-brand-green-700" },
+  LIKE_NEW: {
+    label: "Like New",
+    color: "bg-brand-teal-100 text-brand-teal-700",
+  },
+  GOOD: { label: "Good", color: "bg-brand-gold-100 text-brand-gold-700" },
+  FAIR: { label: "Fair", color: "bg-brand-primary-100 text-brand-primary-700" },
 };
 
 function StarRating({ value, max = 5 }: { value: number; max?: number }) {
   return (
     <span className="flex items-center gap-0.5">
       {Array.from({ length: max }).map((_, i) => (
-        <span key={i} className={i < Math.round(value) ? "text-brand-gold-500" : "text-border-strong"} style={{ fontSize: 14 }}>
+        <span
+          key={i}
+          className={
+            i < Math.round(value) ? "text-brand-gold-500" : "text-border-strong"
+          }
+          style={{ fontSize: 14 }}
+        >
           ★
         </span>
       ))}
@@ -36,7 +56,13 @@ function StarRating({ value, max = 5 }: { value: number; max?: number }) {
   );
 }
 
-function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+function StarPicker({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+}) {
   const [hover, setHover] = useState(0);
   return (
     <span className="flex gap-1">
@@ -49,7 +75,15 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
           onMouseLeave={() => setHover(0)}
           onClick={() => onChange(n)}
         >
-          <span className={(hover || value) >= n ? "text-brand-gold-500" : "text-border-strong"}>★</span>
+          <span
+            className={
+              (hover || value) >= n
+                ? "text-brand-gold-500"
+                : "text-border-strong"
+            }
+          >
+            ★
+          </span>
         </button>
       ))}
     </span>
@@ -57,36 +91,41 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
 }
 
 export default function ItemDetailPage() {
-  const params  = useParams<{ id: string }>();
-  const router  = useRouter();
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { user } = useAuth();
 
-  const [item,        setItem]        = useState<ApiItem | null>(null);
-  const [loading,     setLoading]     = useState(true);
-  const [notFound,    setNotFound]    = useState(false);
-  const [saved,       setSaved]       = useState(false);
-  const [savedCount,  setSavedCount]  = useState(0);
-  const [saveBusy,    setSaveBusy]    = useState(false);
+  const [item, setItem] = useState<ApiItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [savedCount, setSavedCount] = useState(0);
+  const [saveBusy, setSaveBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [submitting,  setSubmitting]  = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Reviews state
-  const [reviews,    setReviews]    = useState<ApiReview[]>([]);
-  const [avgRating,  setAvgRating]  = useState(0);
+  const [reviews, setReviews] = useState<ApiReview[]>([]);
+  const [avgRating, setAvgRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
   const [reviewsLoading, setReviewsLoading] = useState(false);
-  const [reviewOpen,  setReviewOpen]  = useState(false);
-  const [rating,      setRating]      = useState(0);
-  const [comment,     setComment]     = useState("");
-  const [reviewBusy,  setReviewBusy]  = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [reviewBusy, setReviewBusy] = useState(false);
   // orderId for buyer to leave a review on
-  const [reviewableOrderId, setReviewableOrderId] = useState<string | null>(null);
+  const [reviewableOrderId, setReviewableOrderId] = useState<string | null>(
+    null,
+  );
 
   const fetchItem = useCallback(async () => {
     setLoading(true);
     try {
       const res = await itemsApi.getById(params.id);
-      if (res.item.status !== "ACTIVE") { setNotFound(true); return; }
+      if (res.item.status !== "ACTIVE") {
+        setNotFound(true);
+        return;
+      }
       setItem(res.item);
       setSaved(res.item.isSaved ?? false);
       setSavedCount(res.item.savedCount ?? 0);
@@ -104,7 +143,9 @@ export default function ItemDetailPage() {
       setReviews(res.reviews);
       setAvgRating(res.avgRating);
       setReviewCount(res.totalReviews);
-    } catch { /* silent */ } finally {
+    } catch {
+      /* silent */
+    } finally {
       setReviewsLoading(false);
     }
   }, []);
@@ -117,7 +158,9 @@ export default function ItemDetailPage() {
         (o) => o.item?.id === item.id && o.status === "COMPLETED" && !o.review,
       );
       setReviewableOrderId(eligible?.id ?? null);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [user, item]);
 
   useEffect(() => {
@@ -135,17 +178,23 @@ export default function ItemDetailPage() {
   }, [checkReviewable]);
 
   const toggleSave = async () => {
-    if (!user) { notifyError({ title: "Login required", description: "Sign in to save items." }); return; }
+    if (!user) {
+      notifyError({
+        title: "Login required",
+        description: "Sign in to save items.",
+      });
+      return;
+    }
     if (saveBusy) return;
     setSaveBusy(true);
     const next = !saved;
     setSaved(next);
-    setSavedCount((c) => next ? c + 1 : Math.max(0, c - 1));
+    setSavedCount((c) => (next ? c + 1 : Math.max(0, c - 1)));
     try {
       await wishlistApi.toggle(params.id);
     } catch {
       setSaved(!next);
-      setSavedCount((c) => !next ? c + 1 : Math.max(0, c - 1));
+      setSavedCount((c) => (!next ? c + 1 : Math.max(0, c - 1)));
     } finally {
       setSaveBusy(false);
     }
@@ -163,22 +212,36 @@ export default function ItemDetailPage() {
       });
       router.push("/history");
     } catch (e) {
-      notifyError({ title: "Purchase failed", description: (e as Error).message });
+      notifyError({
+        title: "Purchase failed",
+        description: (e as Error).message,
+      });
     } finally {
-      setSubmitting(false); }
+      setSubmitting(false);
+    }
   };
 
   const submitReview = async () => {
     if (!reviewableOrderId || rating === 0) return;
     setReviewBusy(true);
     try {
-      await reviewsApi.create({ orderId: reviewableOrderId, rating, comment: comment || undefined });
-      notifySuccess({ title: "Review submitted!", description: "Thank you for your feedback." });
+      await reviewsApi.create({
+        orderId: reviewableOrderId,
+        rating,
+        comment: comment || undefined,
+      });
+      notifySuccess({
+        title: "Review submitted!",
+        description: "Thank you for your feedback.",
+      });
       setReviewOpen(false);
       setReviewableOrderId(null);
       if (item?.seller?.id) fetchReviews(item.seller.id);
     } catch (e) {
-      notifyError({ title: "Failed to submit", description: (e as Error).message });
+      notifyError({
+        title: "Failed to submit",
+        description: (e as Error).message,
+      });
     } finally {
       setReviewBusy(false);
     }
@@ -198,23 +261,42 @@ export default function ItemDetailPage() {
     return (
       <div className="py-20 text-center">
         <p className="text-4xl">😕</p>
-        <p className="mt-3 text-lg font-semibold text-text-1">Item not available</p>
-        <p className="mt-1 text-sm text-text-3">This listing may have been sold or removed.</p>
-        <Button className="mt-4 btn-cta" onPress={() => router.push("/browse")}>Back to browse</Button>
+        <p className="mt-3 text-lg font-semibold text-text-1">
+          Item not available
+        </p>
+        <p className="mt-1 text-sm text-text-3">
+          This listing may have been sold or removed.
+        </p>
+        <Button className="mt-4 btn-cta" onPress={() => router.push("/browse")}>
+          Back to browse
+        </Button>
       </div>
     );
   }
 
-  const balance   = Number(user?.walletBalance ?? 0);
+  const balance = Number(user?.walletBalance ?? 0);
   const canAfford = balance >= Number(item.displayPrice ?? item.price);
   const displayPx = Number(item.displayPrice ?? item.price);
-  const condMeta  = CONDITION_META[item.condition ?? ""] ?? { label: item.condition, color: "bg-surface-bg-3 text-text-2" };
+  const condMeta = CONDITION_META[item.condition ?? ""] ?? {
+    label: item.condition,
+    color: "bg-surface-bg-3 text-text-2",
+  };
 
   return (
     <div className="space-y-4 pb-4">
       {/* Back */}
-      <button className="flex items-center gap-1 text-sm text-brand-primary-600" onClick={() => router.back()}>
-        <svg fill="none" height="16" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="16">
+      <button
+        className="flex items-center gap-1 text-sm text-brand-primary-600"
+        onClick={() => router.back()}
+      >
+        <svg
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="16"
+        >
           <path d="m15 18-6-6 6-6" />
         </svg>
         Back
@@ -231,10 +313,16 @@ export default function ItemDetailPage() {
           <img
             alt={item.title}
             className="aspect-square w-full object-cover"
-            src={item.imageUrl.startsWith("http") ? item.imageUrl : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
+            src={
+              item.imageUrl.startsWith("http")
+                ? item.imageUrl
+                : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`
+            }
           />
         ) : (
-          <div className="flex aspect-square w-full items-center justify-center bg-gradient-to-br from-brand-primary-200 to-brand-teal-100 text-7xl">🏷️</div>
+          <div className="flex aspect-square w-full items-center justify-center bg-gradient-to-br from-brand-primary-200 to-brand-teal-100 text-7xl">
+            🏷️
+          </div>
         )}
       </motion.div>
 
@@ -265,7 +353,9 @@ export default function ItemDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <p className="text-3xl font-extrabold text-brand-primary-600">{peso(displayPx)}</p>
+          <p className="text-3xl font-extrabold text-brand-primary-600">
+            {peso(displayPx)}
+          </p>
           {item.serviceFee && item.serviceFee > 0 && (
             <span className="rounded-full bg-brand-primary-50 px-2 py-0.5 text-[10px] font-medium text-brand-primary-600">
               incl. ₱{item.serviceFee.toFixed(2)} fee
@@ -274,7 +364,9 @@ export default function ItemDetailPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${condMeta.color}`}>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold ${condMeta.color}`}
+          >
             {condMeta.label}
           </span>
           <span className="rounded-full bg-surface-bg-3 px-3 py-1 text-xs font-medium text-text-2">
@@ -283,12 +375,22 @@ export default function ItemDetailPage() {
         </div>
 
         {item.description && (
-          <p className="text-sm leading-relaxed text-text-2">{item.description}</p>
+          <p className="text-sm leading-relaxed text-text-2">
+            {item.description}
+          </p>
         )}
 
         <div className="rounded-xl bg-surface-bg-3 p-3 text-sm text-text-2 space-y-1">
-          <p>Locker slot: <span className="font-medium text-text-1">{item.slotId ?? "Unassigned"}</span></p>
-          <p>Your balance: <span className="font-medium text-text-1">{peso(balance)}</span></p>
+          <p>
+            Locker slot:{" "}
+            <span className="font-medium text-text-1">
+              {item.slotId ?? "Unassigned"}
+            </span>
+          </p>
+          <p>
+            Your balance:{" "}
+            <span className="font-medium text-text-1">{peso(balance)}</span>
+          </p>
         </div>
 
         {!canAfford && user && (
@@ -306,7 +408,9 @@ export default function ItemDetailPage() {
           transition={{ duration: 0.24, delay: 0.1 }}
           className="rounded-2xl border border-border-subtle bg-surface-bg-1 p-4"
         >
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-text-4">Seller</p>
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-text-4">
+            Seller
+          </p>
           <div className="flex items-center gap-3">
             <Avatar
               src={item.seller.avatarUrl}
@@ -317,17 +421,23 @@ export default function ItemDetailPage() {
               showFallback
             />
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-text-1">{item.seller.fullName}</p>
+              <p className="font-semibold text-text-1">
+                {item.seller.fullName}
+              </p>
               <div className="flex items-center gap-1.5">
                 {reviewsLoading ? (
                   <Skeleton className="h-3.5 w-20 rounded" />
                 ) : reviewCount > 0 ? (
                   <>
                     <StarRating value={avgRating} />
-                    <span className="text-[11px] text-text-3">{avgRating.toFixed(1)} ({reviewCount})</span>
+                    <span className="text-[11px] text-text-3">
+                      {avgRating.toFixed(1)} ({reviewCount})
+                    </span>
                   </>
                 ) : (
-                  <span className="text-[11px] text-text-4">No reviews yet</span>
+                  <span className="text-[11px] text-text-4">
+                    No reviews yet
+                  </span>
                 )}
               </div>
             </div>
@@ -353,9 +463,14 @@ export default function ItemDetailPage() {
           transition={{ duration: 0.24, delay: 0.15 }}
           className="rounded-2xl border border-border-subtle bg-surface-bg-1 p-4 space-y-3"
         >
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-text-4">Reviews</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-text-4">
+            Reviews
+          </p>
           {reviews.slice(0, 5).map((rev) => (
-            <div key={rev.id} className="border-b border-border-subtle pb-3 last:border-0 last:pb-0">
+            <div
+              key={rev.id}
+              className="border-b border-border-subtle pb-3 last:border-0 last:pb-0"
+            >
               <div className="flex items-center gap-2">
                 <Avatar
                   src={rev.reviewer?.avatarUrl}
@@ -364,11 +479,17 @@ export default function ItemDetailPage() {
                   showFallback
                 />
                 <div>
-                  <p className="text-xs font-semibold text-text-1">{rev.reviewer?.fullName}</p>
+                  <p className="text-xs font-semibold text-text-1">
+                    {rev.reviewer?.fullName}
+                  </p>
                   <StarRating value={rev.rating} />
                 </div>
               </div>
-              {rev.comment && <p className="mt-1.5 text-xs leading-relaxed text-text-2">{rev.comment}</p>}
+              {rev.comment && (
+                <p className="mt-1.5 text-xs leading-relaxed text-text-2">
+                  {rev.comment}
+                </p>
+              )}
             </div>
           ))}
         </motion.div>
@@ -381,7 +502,11 @@ export default function ItemDetailPage() {
           isDisabled={!canAfford || !user || item.status !== "ACTIVE"}
           onPress={() => setConfirmOpen(true)}
         >
-          {!user ? "Log in to buy" : !canAfford ? "Insufficient balance" : `Buy now · ${peso(displayPx)}`}
+          {!user
+            ? "Log in to buy"
+            : !canAfford
+              ? "Insufficient balance"
+              : `Buy now · ${peso(displayPx)}`}
         </Button>
       </div>
 
@@ -391,17 +516,37 @@ export default function ItemDetailPage() {
           <ModalHeader className="text-text-1">Confirm purchase</ModalHeader>
           <ModalBody>
             <div className="space-y-2 text-sm text-text-2">
-              <p>Item: <span className="font-medium text-text-1">{item.title}</span></p>
-              <p>Total: <span className="font-bold text-brand-primary-600">{peso(displayPx)}</span></p>
+              <p>
+                Item:{" "}
+                <span className="font-medium text-text-1">{item.title}</span>
+              </p>
+              <p>
+                Total:{" "}
+                <span className="font-bold text-brand-primary-600">
+                  {peso(displayPx)}
+                </span>
+              </p>
               {item.serviceFee && item.serviceFee > 0 && (
-                <p className="text-xs text-text-3">Includes ₱{item.serviceFee.toFixed(2)} platform fee</p>
+                <p className="text-xs text-text-3">
+                  Includes ₱{item.serviceFee.toFixed(2)} platform fee
+                </p>
               )}
-              <p className="text-xs text-status-warning-600">Payment held for up to 24 hours. Refund rules apply.</p>
+              <p className="text-xs text-status-warning-600">
+                Payment held for up to 24 hours. Refund rules apply.
+              </p>
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button variant="light" onPress={() => setConfirmOpen(false)}>Cancel</Button>
-            <Button className="btn-cta" isLoading={submitting} onPress={onConfirm}>Confirm</Button>
+            <Button variant="light" onPress={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="btn-cta"
+              isLoading={submitting}
+              onPress={onConfirm}
+            >
+              Confirm
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -412,14 +557,24 @@ export default function ItemDetailPage() {
           <ModalHeader>Rate this seller</ModalHeader>
           <ModalBody className="space-y-4">
             <div className="flex flex-col items-center gap-2">
-              <Avatar src={item.seller?.avatarUrl} name={item.seller?.fullName} size="lg" isBordered showFallback />
-              <p className="font-semibold text-text-1">{item.seller?.fullName}</p>
+              <Avatar
+                src={item.seller?.avatarUrl}
+                name={item.seller?.fullName}
+                size="lg"
+                isBordered
+                showFallback
+              />
+              <p className="font-semibold text-text-1">
+                {item.seller?.fullName}
+              </p>
             </div>
             <div className="flex justify-center">
               <StarPicker value={rating} onChange={setRating} />
             </div>
             <Textarea
-              classNames={{ inputWrapper: "bg-surface-bg-3 border border-border-strong" }}
+              classNames={{
+                inputWrapper: "bg-surface-bg-3 border border-border-strong",
+              }}
               label="Comment (optional)"
               labelPlacement="outside"
               placeholder="Share your experience…"
@@ -429,7 +584,9 @@ export default function ItemDetailPage() {
             />
           </ModalBody>
           <ModalFooter>
-            <Button variant="light" onPress={() => setReviewOpen(false)}>Cancel</Button>
+            <Button variant="light" onPress={() => setReviewOpen(false)}>
+              Cancel
+            </Button>
             <Button
               className="btn-cta"
               isLoading={reviewBusy}

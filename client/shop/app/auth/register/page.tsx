@@ -32,13 +32,13 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const router = useRouter();
 
-  const [fullName, setFullName]     = useState("");
-  const [email, setEmail]           = useState("");
-  const [password, setPassword]     = useState("");
-  const [confirm, setConfirm]       = useState("");
-  const [role, setRole]             = useState("BUYER");
-  const [showPass, setShowPass]     = useState(false);
-  const [loading, setLoading]       = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [role, setRole] = useState("BUYER");
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const passwordsMatch = confirm === "" || password === confirm;
   const isStrong = password.length >= 8;
@@ -46,15 +46,24 @@ export default function RegisterPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || !email.trim() || !password) {
-      notifyError({ title: "Fill in all fields", description: "Full name, email, and password are required." });
+      notifyError({
+        title: "Fill in all fields",
+        description: "Full name, email, and password are required.",
+      });
       return;
     }
     if (!isStrong) {
-      notifyError({ title: "Password too short", description: "Use at least 8 characters." });
+      notifyError({
+        title: "Password too short",
+        description: "Use at least 8 characters.",
+      });
       return;
     }
     if (password !== confirm) {
-      notifyError({ title: "Passwords don't match", description: "Re-enter the same password in both fields." });
+      notifyError({
+        title: "Passwords don't match",
+        description: "Re-enter the same password in both fields.",
+      });
       return;
     }
 
@@ -67,7 +76,10 @@ export default function RegisterPage() {
       });
       router.push("/auth/login");
     } catch (err) {
-      notifyError({ title: "Registration failed", description: (err as Error).message });
+      notifyError({
+        title: "Registration failed",
+        description: (err as Error).message,
+      });
     } finally {
       setLoading(false);
     }
@@ -86,13 +98,14 @@ export default function RegisterPage() {
           🎓
         </div>
         <h1 className="text-2xl font-extrabold text-text-1">Create account</h1>
-        <p className="mt-1 text-sm text-text-3">Join the UCLM Student Marketplace</p>
+        <p className="mt-1 text-sm text-text-3">
+          Join the UCLM Student Marketplace
+        </p>
       </div>
 
       {/* Form card */}
       <div className="rounded-2xl border border-border-subtle bg-surface-bg-1 p-6 shadow-sm">
         <form className="space-y-4" onSubmit={onSubmit}>
-
           {/* Full name */}
           <Input
             classNames={{ inputWrapper: INPUT_WRAP }}
@@ -153,12 +166,20 @@ export default function RegisterPage() {
                     />
                   ))}
                 </div>
-                <span className={`text-[10px] font-medium ${
-                  password.length >= 12 ? "text-brand-green-600"
-                  : password.length >= 8  ? "text-status-warning-600"
-                  : "text-status-danger-600"
-                }`}>
-                  {password.length >= 12 ? "Strong" : password.length >= 8 ? "Good" : "Weak"}
+                <span
+                  className={`text-[10px] font-medium ${
+                    password.length >= 12
+                      ? "text-brand-green-600"
+                      : password.length >= 8
+                        ? "text-status-warning-600"
+                        : "text-status-danger-600"
+                  }`}
+                >
+                  {password.length >= 12
+                    ? "Strong"
+                    : password.length >= 8
+                      ? "Good"
+                      : "Weak"}
                 </span>
               </div>
             )}
@@ -180,7 +201,9 @@ export default function RegisterPage() {
               onValueChange={setConfirm}
             />
             {!passwordsMatch && (
-              <p className="text-[11px] text-status-danger-600">Passwords don't match</p>
+              <p className="text-[11px] text-status-danger-600">
+                Passwords don't match
+              </p>
             )}
           </div>
 
@@ -200,7 +223,9 @@ export default function RegisterPage() {
                   }`}
                 >
                   <span className="text-xl">{r.emoji}</span>
-                  <p className={`mt-1 text-sm font-semibold ${role === r.value ? "text-brand-primary-700" : "text-text-1"}`}>
+                  <p
+                    className={`mt-1 text-sm font-semibold ${role === r.value ? "text-brand-primary-700" : "text-text-1"}`}
+                  >
                     {r.label}
                   </p>
                   <p className="text-[11px] text-text-4">{r.desc}</p>
@@ -221,7 +246,10 @@ export default function RegisterPage() {
 
         <p className="mt-4 text-center text-sm text-text-3">
           Already have an account?{" "}
-          <NextLink className="font-semibold text-brand-primary-600 hover:underline" href="/auth/login">
+          <NextLink
+            className="font-semibold text-brand-primary-600 hover:underline"
+            href="/auth/login"
+          >
             Log in
           </NextLink>
         </p>
@@ -229,7 +257,8 @@ export default function RegisterPage() {
 
       {/* Terms note */}
       <p className="text-center text-[11px] text-text-4 px-2">
-        By creating an account you agree to the UniThrift Terms of Service and Privacy Policy.
+        By creating an account you agree to the UniThrift Terms of Service and
+        Privacy Policy.
       </p>
     </motion.div>
   );

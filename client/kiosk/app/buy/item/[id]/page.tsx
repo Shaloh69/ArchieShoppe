@@ -70,7 +70,11 @@ export default function KioskBuyItemPage() {
             <img
               alt={item.title}
               className="aspect-[4/3] w-full rounded-xl object-cover"
-              src={item.imageUrl?.startsWith("http") ? item.imageUrl : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`}
+              src={
+                item.imageUrl?.startsWith("http")
+                  ? item.imageUrl
+                  : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`
+              }
             />
           ) : (
             <div className="aspect-[4/3] rounded-xl bg-gradient-to-br from-brand-primary-900 to-brand-primary-700" />
@@ -84,9 +88,7 @@ export default function KioskBuyItemPage() {
             <p className="text-base text-text-2">{item.description}</p>
             <Button
               className="kiosk-glow h-16 w-full text-xl btn-cta"
-              onPress={() =>
-                router.push(`/buy/confirm?itemId=${item.id}`)
-              }
+              onPress={() => router.push(`/buy/confirm?itemId=${item.id}`)}
             >
               Confirm purchase
             </Button>

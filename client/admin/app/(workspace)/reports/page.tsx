@@ -34,11 +34,41 @@ type DayRange = (typeof DAY_OPTIONS)[number];
 
 type MetricKey = "sales" | "commission" | "refunds" | "payouts";
 
-const METRICS: { key: MetricKey; label: string; countField: keyof ApiDailyRow; amountField: keyof ApiDailyRow; color: string }[] = [
-  { key: "sales",      label: "Sales",          countField: "sales_count",      amountField: "sales_total",      color: "#ee4d2d" },
-  { key: "commission", label: "Commission",      countField: "commission_count", amountField: "commission_total", color: "#0ea5e9" },
-  { key: "refunds",    label: "Refunds",         countField: "refund_count",     amountField: "refund_total",     color: "#f59e0b" },
-  { key: "payouts",    label: "Seller Payouts",  countField: "payout_count",     amountField: "payout_total",     color: "#10b981" },
+const METRICS: {
+  key: MetricKey;
+  label: string;
+  countField: keyof ApiDailyRow;
+  amountField: keyof ApiDailyRow;
+  color: string;
+}[] = [
+  {
+    key: "sales",
+    label: "Sales",
+    countField: "sales_count",
+    amountField: "sales_total",
+    color: "#ee4d2d",
+  },
+  {
+    key: "commission",
+    label: "Commission",
+    countField: "commission_count",
+    amountField: "commission_total",
+    color: "#0ea5e9",
+  },
+  {
+    key: "refunds",
+    label: "Refunds",
+    countField: "refund_count",
+    amountField: "refund_total",
+    color: "#f59e0b",
+  },
+  {
+    key: "payouts",
+    label: "Seller Payouts",
+    countField: "payout_count",
+    amountField: "payout_total",
+    color: "#10b981",
+  },
 ];
 
 function downloadCsv(filename: string, headers: string[], rows: string[][]) {
@@ -64,14 +94,19 @@ export default function AdminReportsPage() {
       const res = await reportsApi.daily(d);
       setRows(res.rows);
     } catch (err) {
-      notifyError({ title: "Failed to load reports", description: (err as Error).message });
+      notifyError({
+        title: "Failed to load reports",
+        description: (err as Error).message,
+      });
       setRows([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchData(days); }, [fetchData, days]);
+  useEffect(() => {
+    fetchData(days);
+  }, [fetchData, days]);
 
   const currentMetric = METRICS.find((m) => m.key === metric)!;
 
@@ -85,9 +120,16 @@ export default function AdminReportsPage() {
     [rows, currentMetric],
   );
 
-  const totalCount  = useMemo(() => rows.reduce((s, r) => s + (r[currentMetric.countField] as number), 0), [rows, currentMetric]);
-  const totalAmount = useMemo(() => rows.reduce((s, r) => s + (r[currentMetric.amountField] as number), 0), [rows, currentMetric]);
-  const avgPerDay   = rows.length > 0 ? totalAmount / rows.length : 0;
+  const totalCount = useMemo(
+    () => rows.reduce((s, r) => s + (r[currentMetric.countField] as number), 0),
+    [rows, currentMetric],
+  );
+  const totalAmount = useMemo(
+    () =>
+      rows.reduce((s, r) => s + (r[currentMetric.amountField] as number), 0),
+    [rows, currentMetric],
+  );
+  const avgPerDay = rows.length > 0 ? totalAmount / rows.length : 0;
 
   const handleExport = () => {
     const headers = ["Date", "Count", "Amount (₱)"];
@@ -109,7 +151,12 @@ export default function AdminReportsPage() {
             Sales, commission, refunds, and seller payout reporting.
           </p>
         </div>
-        <Button className="btn-brand" size="sm" isDisabled={loading} onPress={handleExport}>
+        <Button
+          className="btn-brand"
+          size="sm"
+          isDisabled={loading}
+          onPress={handleExport}
+        >
           Export CSV
         </Button>
       </div>
@@ -146,7 +193,10 @@ export default function AdminReportsPage() {
       {loading ? (
         <div className="grid gap-4 md:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <Card key={i} className="border border-border-subtle bg-surface-bg-2">
+            <Card
+              key={i}
+              className="border border-border-subtle bg-surface-bg-2"
+            >
               <CardBody className="gap-2 p-4">
                 <Skeleton className="h-3 w-24 rounded" />
                 <Skeleton className="h-8 w-20 rounded" />
@@ -158,20 +208,32 @@ export default function AdminReportsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="border border-border-subtle bg-surface-bg-2">
             <CardBody className="p-4">
-              <p className="text-xs uppercase tracking-wide text-text-3">Total transactions</p>
-              <p className="text-2xl font-semibold text-brand-primary-700">{totalCount.toLocaleString()}</p>
+              <p className="text-xs uppercase tracking-wide text-text-3">
+                Total transactions
+              </p>
+              <p className="text-2xl font-semibold text-brand-primary-700">
+                {totalCount.toLocaleString()}
+              </p>
             </CardBody>
           </Card>
           <Card className="border border-border-subtle bg-surface-bg-2">
             <CardBody className="p-4">
-              <p className="text-xs uppercase tracking-wide text-text-3">Total amount</p>
-              <p className="text-2xl font-semibold text-brand-cyan-700">{peso(totalAmount)}</p>
+              <p className="text-xs uppercase tracking-wide text-text-3">
+                Total amount
+              </p>
+              <p className="text-2xl font-semibold text-brand-cyan-700">
+                {peso(totalAmount)}
+              </p>
             </CardBody>
           </Card>
           <Card className="border border-border-subtle bg-surface-bg-2">
             <CardBody className="p-4">
-              <p className="text-xs uppercase tracking-wide text-text-3">Avg / day</p>
-              <p className="text-2xl font-semibold text-brand-indigo-600">{peso(avgPerDay)}</p>
+              <p className="text-xs uppercase tracking-wide text-text-3">
+                Avg / day
+              </p>
+              <p className="text-2xl font-semibold text-brand-indigo-600">
+                {peso(avgPerDay)}
+              </p>
             </CardBody>
           </Card>
         </div>
@@ -186,18 +248,51 @@ export default function AdminReportsPage() {
           {loading ? (
             <Skeleton className="h-52 w-full rounded-lg" />
           ) : chartData.length === 0 ? (
-            <div className="flex h-52 items-center justify-center text-sm text-text-3">No data for this period.</div>
+            <div className="flex h-52 items-center justify-center text-sm text-text-3">
+              No data for this period.
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={208}>
-              <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle, #e5e7eb)" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--color-text-3, #9ca3af)" }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--color-text-3, #9ca3af)" }} tickLine={false} axisLine={false} tickFormatter={(v) => `₱${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`} />
-                <ReTooltip
-                  contentStyle={{ background: "var(--color-surface-bg-2, #fff)", border: "1px solid var(--color-border-subtle, #e5e7eb)", borderRadius: 8, fontSize: 12 }}
-                  formatter={(value, name) => [name === "amount" ? peso(Number(value ?? 0)) : (value ?? 0), name === "amount" ? "Amount" : "Count"]}
+              <BarChart
+                data={chartData}
+                margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border-subtle, #e5e7eb)"
                 />
-                <Bar dataKey="amount" fill={currentMetric.color} radius={[4, 4, 0, 0]} maxBarSize={32} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: "var(--color-text-3, #9ca3af)" }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: "var(--color-text-3, #9ca3af)" }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) =>
+                    `₱${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`
+                  }
+                />
+                <ReTooltip
+                  contentStyle={{
+                    background: "var(--color-surface-bg-2, #fff)",
+                    border: "1px solid var(--color-border-subtle, #e5e7eb)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                  formatter={(value, name) => [
+                    name === "amount" ? peso(Number(value ?? 0)) : (value ?? 0),
+                    name === "amount" ? "Amount" : "Count",
+                  ]}
+                />
+                <Bar
+                  dataKey="amount"
+                  fill={currentMetric.color}
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={32}
+                />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -214,15 +309,41 @@ export default function AdminReportsPage() {
             <Skeleton className="h-40 w-full rounded-lg" />
           ) : chartData.length === 0 ? null : (
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle, #e5e7eb)" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--color-text-3, #9ca3af)" }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--color-text-3, #9ca3af)" }} tickLine={false} axisLine={false} allowDecimals={false} />
-                <ReTooltip
-                  contentStyle={{ background: "var(--color-surface-bg-2, #fff)", border: "1px solid var(--color-border-subtle, #e5e7eb)", borderRadius: 8, fontSize: 12 }}
-                  formatter={(value) => [(value ?? 0), "Count"]}
+              <BarChart
+                data={chartData}
+                margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border-subtle, #e5e7eb)"
                 />
-                <Bar dataKey="count" fill={`${currentMetric.color}99`} radius={[4, 4, 0, 0]} maxBarSize={32} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: "var(--color-text-3, #9ca3af)" }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: "var(--color-text-3, #9ca3af)" }}
+                  tickLine={false}
+                  axisLine={false}
+                  allowDecimals={false}
+                />
+                <ReTooltip
+                  contentStyle={{
+                    background: "var(--color-surface-bg-2, #fff)",
+                    border: "1px solid var(--color-border-subtle, #e5e7eb)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                  formatter={(value) => [value ?? 0, "Count"]}
+                />
+                <Bar
+                  dataKey="count"
+                  fill={`${currentMetric.color}99`}
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={32}
+                />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -254,8 +375,12 @@ export default function AdminReportsPage() {
             {(row) => (
               <TableRow key={row.date}>
                 <TableCell>{shortDate(`${row.date}T00:00:00Z`)}</TableCell>
-                <TableCell>{(row[currentMetric.countField] as number).toLocaleString()}</TableCell>
-                <TableCell>{peso(row[currentMetric.amountField] as number)}</TableCell>
+                <TableCell>
+                  {(row[currentMetric.countField] as number).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  {peso(row[currentMetric.amountField] as number)}
+                </TableCell>
               </TableRow>
             )}
           </TableBody>

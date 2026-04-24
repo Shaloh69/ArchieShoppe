@@ -34,6 +34,28 @@ router.patch('/plans/:id', authenticate, adminOnly, async (req: AuthRequest, res
   res.json({ plan });
 });
 
+// Camera assignment routes — must come BEFORE /:slotId to avoid param collision
+router.get('/camera-assignments', authenticate, adminOnly, async (_req, res: Response) => {
+  const assignments = await lockerService.getCameraAssignments();
+  res.json({ assignments });
+});
+
+router.patch(
+  '/camera-assignments/:slotId',
+  authenticate,
+  adminOnly,
+  async (req: AuthRequest, res: Response) => {
+    const { cameraIndex } = req.body;
+    const idx = cameraIndex === null || cameraIndex === undefined ? null : Number(cameraIndex);
+    if (idx !== null && (isNaN(idx) || idx < 0)) {
+      res.status(400).json({ message: 'cameraIndex must be a non-negative integer or null' });
+      return;
+    }
+    const slot = await lockerService.updateCameraAssignment(req.params.slotId, idx);
+    res.json({ slot });
+  },
+);
+
 router.get('/:slotId', async (req, res: Response) => {
   const slot = await lockerService.getSlot(req.params.slotId);
   res.json({ slot });
