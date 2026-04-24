@@ -49,22 +49,22 @@ export async function debitWallet(
   referenceId?: string,
   description?: string,
 ) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { walletBalance: true },
-  });
-  if (!user) throw Object.assign(new Error('User not found'), { status: 404 });
-  if (user.walletBalance.toNumber() < amount) {
-    throw Object.assign(new Error('Insufficient wallet balance'), { status: 400 });
-  }
-
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: userId },
+  // Single atomic UPDATE with a balance guard in the WHERE clause eliminates
+  // the race condition that exists when check and debit are separate queries.
+  await prisma.$transaction(async (tx) => {
+    const result = await tx.user.updateMany({
+      where: { id: userId, walletBalance: { gte: amount } },
       data: { walletBalance: { decrement: amount } },
-    }),
-    prisma.walletTransaction.create({
+    });
+    if (result.count === 0) {
+      const exists = await tx.user.findUnique({ where: { id: userId }, select: { id: true } });
+      throw Object.assign(
+        new Error(exists ? 'Insufficient wallet balance' : 'User not found'),
+        { status: exists ? 400 : 404 },
+      );
+    }
+    await tx.walletTransaction.create({
       data: { userId, type, amount, referenceId, description },
-    }),
-  ]);
+    });
+  });
 }

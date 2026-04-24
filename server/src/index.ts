@@ -1,4 +1,5 @@
 import './config/env'; // validate env first
+import 'express-async-errors'; // patches Express 4 to forward async rejections to errorHandler
 import http from 'http';
 import express from 'express';
 import cors from 'cors';

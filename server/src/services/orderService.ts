@@ -11,8 +11,6 @@ export const createOrderSchema = z.object({
   itemId: z.string().cuid(),
 });
 
-const PLATFORM_COMMISSION = 0.1; // 10 % of buyer's total taken as platform commission
-const SELLER_SHARE = 1 - PLATFORM_COMMISSION;
 const HOLD_HOURS = 24;
 
 export async function createOrder(buyerId: string, data: z.infer<typeof createOrderSchema>) {
@@ -102,7 +100,12 @@ export async function completeOrder(orderId: string, actorId: string) {
   if (order.status !== 'HELD')
     throw Object.assign(new Error('Order cannot be completed'), { status: 400 });
 
-  const sellerPayout = order.amount.toNumber() * SELLER_SHARE;
+  // Use the same dynamic fee rate as createOrder so payouts are always consistent.
+  // Seller receives base price = totalAmount / (1 + feeRate); platform keeps the rest.
+  const feeRate = await getPlatformFeeRate();
+  const totalAmount = order.amount.toNumber();
+  const sellerPayout = Math.floor((totalAmount / (1 + feeRate)) * 100) / 100;
+  const platformCommission = Math.round((totalAmount - sellerPayout) * 100) / 100;
 
   await prisma.$transaction(async (tx) => {
     await tx.order.update({ where: { id: orderId }, data: { status: 'COMPLETED' } });
@@ -120,7 +123,7 @@ export async function completeOrder(orderId: string, actorId: string) {
     data: {
       userId: order.sellerId,
       type: 'COMMISSION',
-      amount: order.amount.toNumber() * PLATFORM_COMMISSION,
+      amount: platformCommission,
       referenceId: orderId,
       description: 'Platform commission',
     },
@@ -133,7 +136,14 @@ export async function completeOrder(orderId: string, actorId: string) {
   await createAuditLog('ORDER', actorId, orderId, 'ORDER_COMPLETED', null);
   broadcastToAdmins({ type: 'ORDER_UPDATE', orderId, status: 'COMPLETED' });
 
-  return prisma.order.findUnique({ where: { id: orderId } });
+  return prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      item: { select: { id: true, title: true, imageUrl: true } },
+      buyer: { select: { id: true, fullName: true } },
+      seller: { select: { id: true, fullName: true } },
+    },
+  });
 }
 
 export async function getOrdersByBuyer(buyerId: string, page = 1, limit = 20) {
@@ -222,8 +232,10 @@ export async function releaseExpiredHolds() {
     include: { item: true },
   });
 
+  const feeRate = await getPlatformFeeRate();
   for (const order of expired) {
-    const sellerPayout = order.amount.toNumber() * SELLER_SHARE;
+    const totalAmount = order.amount.toNumber();
+    const sellerPayout = Math.floor((totalAmount / (1 + feeRate)) * 100) / 100;
     await prisma.$transaction(async (tx) => {
       await tx.order.update({ where: { id: order.id }, data: { status: 'COMPLETED' } });
       await tx.item.update({ where: { id: order.itemId }, data: { status: 'SOLD' } });

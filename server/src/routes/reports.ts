@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import { WalletTxnType, AuditType } from '@prisma/client';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { adminOnly } from '../middleware/adminOnly';
 import { prisma } from '../config/db';
@@ -52,7 +53,7 @@ router.get('/transactions', authenticate, adminOnly, async (req: AuthRequest, re
   const skip = (page - 1) * limit;
   const type = req.query.type as string | undefined;
 
-  const where = type ? { type: type as never } : {};
+  const where = type ? { type: type as WalletTxnType } : {};
   const [total, transactions] = await Promise.all([
     prisma.walletTransaction.count({ where }),
     prisma.walletTransaction.findMany({
@@ -73,7 +74,7 @@ router.get('/audit-logs', authenticate, adminOnly, async (req: AuthRequest, res:
   const skip = (page - 1) * limit;
   const type = req.query.type as string | undefined;
 
-  const where = type ? { type: type as never } : {};
+  const where = type ? { type: type as AuditType } : {};
   const [total, logs] = await Promise.all([
     prisma.auditLog.count({ where }),
     prisma.auditLog.findMany({

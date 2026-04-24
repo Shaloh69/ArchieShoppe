@@ -305,7 +305,7 @@ export const configApi = {
 
   setPlatformFee: (feePct: number) =>
     apiFetch<{ feePct: number }>("/api/config/platform-fee", {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify({ feePct }),
     }),
 
@@ -313,7 +313,7 @@ export const configApi = {
     id: string,
     data: { price?: number; name?: string },
   ) =>
-    apiFetch<{ plan: ApiLockerPlan }>(`/api/config/subscription-plans/${id}`, {
+    apiFetch<{ plan: ApiLockerPlan }>(`/api/lockers/plans/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),

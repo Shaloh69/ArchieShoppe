@@ -1,3 +1,4 @@
+import { LockerStatus } from '@prisma/client';
 import { prisma } from '../config/db';
 import { createAuditLog } from '../utils/audit';
 import { broadcastToAdmins } from '../ws/broadcaster';
@@ -34,7 +35,7 @@ export async function updateSlotStatus(
 ) {
   const slot = await prisma.lockerSlot.update({
     where: { slotId },
-    data: { status: status as never, lastEvent: new Date().toISOString() },
+    data: { status: status as LockerStatus, lastEvent: new Date().toISOString() },
   });
 
   await prisma.lockerEvent.create({

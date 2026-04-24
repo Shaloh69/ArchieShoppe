@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ItemStatus } from '@prisma/client';
+import { type Prisma, ItemStatus } from '@prisma/client';
 import { prisma } from '../config/db';
 import { debitWallet } from './walletService';
 import { createAuditLog } from '../utils/audit';
@@ -51,16 +51,17 @@ export async function browseItems(query: z.infer<typeof browseSchema>, userId?: 
   const { page, limit, category, condition, minPrice, maxPrice, search, sortBy } = query;
   const skip = (page - 1) * limit;
 
-  const where: Record<string, unknown> = { status: 'ACTIVE' };
-  if (category) where['category'] = category;
-  if (condition) where['condition'] = condition;
+  const where: Prisma.ItemWhereInput = { status: ItemStatus.ACTIVE };
+  if (category) where.category = category;
+  if (condition) where.condition = condition;
   if (minPrice !== undefined || maxPrice !== undefined) {
-    where['price'] = {};
-    if (minPrice !== undefined) (where['price'] as Record<string, unknown>)['gte'] = minPrice;
-    if (maxPrice !== undefined) (where['price'] as Record<string, unknown>)['lte'] = maxPrice;
+    where.price = {
+      ...(minPrice !== undefined ? { gte: minPrice } : {}),
+      ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+    };
   }
   if (search) {
-    where['OR'] = [{ title: { contains: search } }, { description: { contains: search } }];
+    where.OR = [{ title: { contains: search } }, { description: { contains: search } }];
   }
 
   const orderBy =
@@ -71,9 +72,9 @@ export async function browseItems(query: z.infer<typeof browseSchema>, userId?: 
         : { createdAt: 'desc' as const };
 
   const [total, raw, feeRate] = await Promise.all([
-    prisma.item.count({ where: where as never }),
+    prisma.item.count({ where }),
     prisma.item.findMany({
-      where: where as never,
+      where,
       orderBy,
       skip,
       take: limit,

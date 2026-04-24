@@ -167,15 +167,17 @@ async function handleCheckoutPaid(event: Record<string, unknown>) {
     ?.data?.id;
   if (!sessionId) return { received: true };
 
+  // Atomic mark-as-paid guard against double-credits on webhook retries
+  const result = await prisma.paymongoPayment.updateMany({
+    where: { checkoutSessionId: sessionId, status: { not: 'paid' } },
+    data: { status: 'paid', completedAt: new Date() },
+  });
+  if (result.count === 0) return { received: true };
+
   const payment = await prisma.paymongoPayment.findUnique({
     where: { checkoutSessionId: sessionId },
   });
-  if (!payment || payment.status === 'paid') return { received: true };
-
-  await prisma.paymongoPayment.update({
-    where: { id: payment.id },
-    data: { status: 'paid', completedAt: new Date() },
-  });
+  if (!payment) return { received: true };
 
   await creditWallet(
     payment.userId,
@@ -200,12 +202,20 @@ async function handleSourceChargeable(event: Record<string, unknown>) {
 
   if (!sourceId) return { received: true };
 
+  // Mark paid atomically — updateMany returns count 0 if already processed,
+  // preventing double-credits when PayMongo retries the webhook.
+  const result = await prisma.paymongoPayment.updateMany({
+    where: { checkoutSessionId: sourceId, status: { not: 'paid' } },
+    data: { status: 'paid', completedAt: new Date() },
+  });
+  if (result.count === 0) return { received: true };
+
   const payment = await prisma.paymongoPayment.findUnique({
     where: { checkoutSessionId: sourceId },
   });
-  if (!payment || payment.status === 'paid') return { received: true };
+  if (!payment) return { received: true };
 
-  // Create a PayMongo Payment from the source
+  // Create the PayMongo Payment resource from the source (best-effort)
   try {
     await paymongoClient.post('/payments', {
       data: {
@@ -218,14 +228,9 @@ async function handleSourceChargeable(event: Record<string, unknown>) {
       },
     });
   } catch (err) {
-    // Payment may have already been created — log but don't throw
+    // Payment may have already been created on a previous webhook retry — not fatal
     console.error('[webhook] Failed to create payment from source:', err);
   }
-
-  await prisma.paymongoPayment.update({
-    where: { id: payment.id },
-    data: { status: 'paid', completedAt: new Date() },
-  });
 
   await creditWallet(
     payment.userId,

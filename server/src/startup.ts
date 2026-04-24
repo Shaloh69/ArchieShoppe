@@ -18,6 +18,10 @@ export async function runMigrations(): Promise<void> {
     console.error('[startup] Schema sync failed — server cannot start safely:', err);
     throw err;
   }
+  // Warm the connection pool immediately so the first real request isn't slow
+  // and so startup failures surface here rather than mid-flight.
+  await prisma.$connect();
+  console.log('[startup] Database connection established.');
 }
 
 export async function runSeed(): Promise<void> {
